@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @ToString
 @Builder
-public class NotFoundException extends RuntimeException{
+public class NotFoundException extends RuntimeException {
     private String message;
     private HttpStatus status;
 }

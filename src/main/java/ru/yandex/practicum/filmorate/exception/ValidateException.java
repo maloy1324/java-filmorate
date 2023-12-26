@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @ToString
 @Builder
-public class ValidateException extends RuntimeException{
+public class ValidateException extends RuntimeException {
     private String message;
     private HttpStatus status;
 }
