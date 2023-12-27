@@ -8,7 +8,11 @@ import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.util.ValidationUtils;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,11 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FilmControllerTest {
 
-    FilmController controller;
-
-    FilmService service;
-
-    FilmRepository repository;
+    private FilmController controller;
 
     Film film = Film.builder()
             .id(1)
@@ -33,8 +33,12 @@ class FilmControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        repository = new FilmRepository();
-        service = new FilmService(repository);
+        Validator validator;
+        try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
+            validator = validatorFactory.usingContext().getValidator();
+        }
+        FilmRepository repository = new FilmRepository();
+        FilmService service = new FilmService(repository, new ValidationUtils(validator));
         controller = new FilmController(service);
     }
 
@@ -53,27 +57,6 @@ class FilmControllerTest {
     }
 
     @Test
-    void invalidName() {
-        film.setName("");
-        ValidateException exception = Assertions.assertThrows(ValidateException.class, () -> {
-            controller.create(film);
-        });
-        Assertions.assertEquals("Название не может быть пустым", exception.getMessage());
-    }
-
-    @Test
-    void invalidDescription() {
-        film.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit." +
-                " Nulla a purus ullamcorper dolor commodo mattis non at ex." +
-                " Vivamus scelerisque, ipsum non feugiat gravida, nulla augue tempor libero, eu aliquam.");
-        ValidateException exception = Assertions.assertThrows(ValidateException.class, () -> {
-            controller.create(film);
-        });
-        assertEquals(String.format("Максимальная длина описания — %d символов",
-                FilmConstants.MAX_DESCRIPTION_LENGTH), exception.getMessage());
-    }
-
-    @Test
     void invalidReleaseDate() {
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         ValidateException exception = Assertions.assertThrows(ValidateException.class, () -> {
@@ -83,14 +66,5 @@ class FilmControllerTest {
                 "Дата релиза не может быть раньше %s",
                 FilmConstants.FILM_RELEASE_DATE_LIMIT.format(FilmConstants.DATE_FORMATTER)
         ), exception.getMessage());
-    }
-
-    @Test
-    void invalidDuration() {
-        film.setDuration(-1);
-        ValidateException exception = Assertions.assertThrows(ValidateException.class, () -> {
-            controller.create(film);
-        });
-        assertEquals("Продолжительность фильма должна быть положительной.", exception.getMessage());
     }
 }

@@ -18,12 +18,16 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) {
-        return userService.addUser(user);
+        User newUser = userService.addUser(user);
+        log.info("Пользователь {} добавлен.", user.getName());
+        return newUser;
     }
 
     @PutMapping
     public User update(@RequestBody User user) {
-        return userService.updateUser(user);
+        User updatedUser = userService.updateUser(user);
+        log.info("Пользователь {} обновлён.", user.getName());
+        return updatedUser;
     }
 
     @GetMapping

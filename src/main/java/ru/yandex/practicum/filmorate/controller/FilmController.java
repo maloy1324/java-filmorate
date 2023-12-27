@@ -17,12 +17,16 @@ public class FilmController {
 
     @PostMapping
     public Film create(@RequestBody Film film) {
-        return filmService.addFilm(film);
+        Film newFilm = filmService.addFilm(film);
+        log.info("Фильм {} добавлен", film.getName());
+        return newFilm;
     }
 
     @PutMapping
     public Film update(@RequestBody Film film) {
-        return filmService.updateFilm(film);
+        Film updatedFilm = filmService.updateFilm(film);
+        log.info("Фильм {} обновлен", film.getName());
+        return updatedFilm;
     }
 
     @GetMapping
@@ -31,7 +35,7 @@ public class FilmController {
     }
 
     @GetMapping("/{filmId}")
-    public Film getFilm(@PathVariable Integer filmId) {
+    public Film findFilm(@PathVariable Integer filmId) {
         return filmService.getFilm(filmId);
     }
 
