@@ -17,21 +17,21 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User createUser(@RequestBody User user) {
         User newUser = userService.addUser(user);
         log.info("Пользователь {} добавлен.", user.getName());
         return newUser;
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
+    public User updateUser(@RequestBody User user) {
         User updatedUser = userService.updateUser(user);
         log.info("Пользователь {} обновлён.", user.getName());
         return updatedUser;
     }
 
     @GetMapping
-    public Collection<User> findAll() {
+    public Collection<User> findAllUsers() {
         return userService.getUsers();
     }
 

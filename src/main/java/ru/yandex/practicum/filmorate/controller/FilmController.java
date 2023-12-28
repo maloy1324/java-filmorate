@@ -16,21 +16,21 @@ public class FilmController {
     private final FilmService filmService;
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film createFilm(@RequestBody Film film) {
         Film newFilm = filmService.addFilm(film);
         log.info("Фильм {} добавлен", film.getName());
         return newFilm;
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) {
+    public Film updateFilm(@RequestBody Film film) {
         Film updatedFilm = filmService.updateFilm(film);
         log.info("Фильм {} обновлен", film.getName());
         return updatedFilm;
     }
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public Collection<Film> findAllFilms() {
         return filmService.findAll();
     }
 

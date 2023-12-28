@@ -44,23 +44,23 @@ class FilmControllerTest {
 
     @Test
     void create() {
-        controller.create(film);
-        assertArrayEquals(List.of(film).toArray(), controller.findAll().toArray());
+        controller.createFilm(film);
+        assertArrayEquals(List.of(film).toArray(), controller.findAllFilms().toArray());
     }
 
     @Test
     void update() {
-        controller.create(film);
+        controller.createFilm(film);
         film.setName("new film name");
-        controller.update(film);
-        assertArrayEquals(List.of(film).toArray(), controller.findAll().toArray());
+        controller.updateFilm(film);
+        assertArrayEquals(List.of(film).toArray(), controller.findAllFilms().toArray());
     }
 
     @Test
     void invalidReleaseDate() {
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         ValidateException exception = Assertions.assertThrows(ValidateException.class, () -> {
-            controller.create(film);
+            controller.createFilm(film);
         });
         assertEquals(String.format(
                 "Дата релиза не может быть раньше %s",

@@ -40,22 +40,22 @@ class UserControllerTest {
 
     @Test
     void create() {
-        controller.create(user);
-        assertArrayEquals(List.of(user).toArray(), controller.findAll().toArray());
+        controller.createUser(user);
+        assertArrayEquals(List.of(user).toArray(), controller.findAllUsers().toArray());
     }
 
     @Test
     void update() {
-        controller.create(user);
+        controller.createUser(user);
         user.setName("newname1324");
-        controller.update(user);
-        assertArrayEquals(List.of(user).toArray(), controller.findAll().toArray());
+        controller.updateUser(user);
+        assertArrayEquals(List.of(user).toArray(), controller.findAllUsers().toArray());
     }
 
     @Test
     void emptyName() {
         user.setName(null);
-        controller.create(user);
+        controller.createUser(user);
         assertEquals("user", controller.findUser(1).getName());
     }
 }

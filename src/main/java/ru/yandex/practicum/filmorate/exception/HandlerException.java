@@ -11,14 +11,14 @@ public class HandlerException {
     @ExceptionHandler(ValidateException.class)
     public ResponseEntity<ResponseError> validate(ValidateException e) {
         return new ResponseEntity<>(ResponseError.builder()
-                .message("Ошибка: " + e.getMessage())
+                .message("Ошибка вадидации: " + e.getMessage())
                 .build(), e.getStatus());
     }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ResponseError> notFound(NotFoundException e) {
         return new ResponseEntity<>(ResponseError.builder()
-                .message("Ошибка: " + e.getMessage())
+                .message(e.getMessage())
                 .build(), e.getStatus());
     }
 }
