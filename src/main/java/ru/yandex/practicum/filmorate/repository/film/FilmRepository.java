@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.repository.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public interface FilmRepository {
     Film save(Film film);
