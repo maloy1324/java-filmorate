@@ -1,12 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.constant.FilmConstants;
-import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.film.FilmRepositoryImpl;
+import ru.yandex.practicum.filmorate.repository.user.UserRepositoryImpl;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.util.ValidationUtils;
 
@@ -17,14 +15,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FilmControllerTest {
 
     private FilmController controller;
 
     Film film = Film.builder()
-            .id(1)
+            .id(1L)
             .name("film name")
             .description("film description")
             .releaseDate(LocalDate.of(1997, 3, 24))
@@ -37,8 +34,9 @@ class FilmControllerTest {
         try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
             validator = validatorFactory.usingContext().getValidator();
         }
-        FilmRepository repository = new FilmRepository();
-        FilmService service = new FilmService(repository, new ValidationUtils(validator));
+        FilmRepositoryImpl filmRepository = new FilmRepositoryImpl();
+        UserRepositoryImpl userRepository = new UserRepositoryImpl();
+        FilmService service = new FilmService(filmRepository, userRepository, new ValidationUtils(validator));
         controller = new FilmController(service);
     }
 
@@ -54,17 +52,5 @@ class FilmControllerTest {
         film.setName("new film name");
         controller.updateFilm(film);
         assertArrayEquals(List.of(film).toArray(), controller.findAllFilms().toArray());
-    }
-
-    @Test
-    void invalidReleaseDate() {
-        film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        ValidateException exception = Assertions.assertThrows(ValidateException.class, () -> {
-            controller.createFilm(film);
-        });
-        assertEquals(String.format(
-                "Дата релиза не может быть раньше %s",
-                FilmConstants.FILM_RELEASE_DATE_LIMIT.format(FilmConstants.DATE_FORMATTER)
-        ), exception.getMessage());
     }
 }

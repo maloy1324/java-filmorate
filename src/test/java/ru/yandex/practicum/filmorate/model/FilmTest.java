@@ -14,8 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FilmTest {
     private Validator validator;
-    private final Film film = Film.builder()
-            .id(1)
+    private Film film = Film.builder()
+            .id(1L)
             .name("film name")
             .description("film description")
             .releaseDate(LocalDate.of(1998, 7, 20))
@@ -50,6 +50,15 @@ class FilmTest {
         film.setDuration(-1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals("Продолжительность фильма должна быть положительной",
+                violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void invalidDate() {
+        film.setReleaseDate(LocalDate.of(1895, 12, 27));
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertEquals(1, violations.size());
+        assertEquals("Дата релиза не может быть раньше 1985-12-28",
                 violations.iterator().next().getMessage());
     }
 }

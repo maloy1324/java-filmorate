@@ -7,6 +7,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
+
+import static ru.yandex.practicum.filmorate.constant.FilmConstants.SIZE_OF_POPULAR_FILMS;
 
 @Slf4j
 @AllArgsConstructor
@@ -35,8 +38,22 @@ public class FilmController {
     }
 
     @GetMapping("/{filmId}")
-    public Film findFilm(@PathVariable Integer filmId) {
+    public Film findFilm(@PathVariable Long filmId) {
         return filmService.getFilm(filmId);
     }
 
+    @PutMapping("{id}/like/{userId}")
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.addLike(userId, id);
+    }
+
+    @DeleteMapping("{id}/like/{userId}")
+    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.removeLike(userId, id);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> findPopularFilms(@RequestParam(defaultValue = SIZE_OF_POPULAR_FILMS) String count) {
+        return filmService.findPopularFilms(count);
+    }
 }
