@@ -6,11 +6,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.film.FilmRepositoryImpl;
 import ru.yandex.practicum.filmorate.repository.user.UserRepositoryImpl;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.util.ValidationUtils;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,13 +26,9 @@ class FilmControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        Validator validator;
-        try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
-            validator = validatorFactory.usingContext().getValidator();
-        }
         FilmRepositoryImpl filmRepository = new FilmRepositoryImpl();
         UserRepositoryImpl userRepository = new UserRepositoryImpl();
-        FilmService service = new FilmService(filmRepository, userRepository, new ValidationUtils(validator));
+        FilmService service = new FilmService(filmRepository, userRepository);
         controller = new FilmController(service);
     }
 

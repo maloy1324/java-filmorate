@@ -41,18 +41,8 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public boolean addLike(Long userId, Long filmId) {
-        return films.get(filmId).getLikes().add(userId);
-    }
-
-    @Override
     public boolean existsFilmById(Long filmId) {
         return films.containsKey(filmId);
-    }
-
-    @Override
-    public boolean removeLike(Long userId, Long filmId) {
-        return films.get(filmId).getLikes().remove(userId);
     }
 
     @Override

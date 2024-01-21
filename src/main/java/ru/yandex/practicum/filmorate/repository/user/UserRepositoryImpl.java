@@ -3,7 +3,10 @@ package ru.yandex.practicum.filmorate.repository.user;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
@@ -38,28 +41,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void addFriend(Long userId, Long friendId) {
-        users.get(userId).getFriendsId().add(friendId);
-        users.get(friendId).getFriendsId().add(userId);
-    }
-
-    @Override
     public List<User> findAllFriends(Long userId) {
         return users.get(userId).getFriendsId().stream()
-                .map(users::get)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void deleteFriendById(Long userId, Long friendId) {
-        users.get(userId).getFriendsId().remove(friendId);
-    }
-
-    @Override
-    public List<User> findCommonFriends(Long userId, Long otherId) {
-        Set<Long> userFriends = users.get(userId).getFriendsId();
-        return users.get(otherId).getFriendsId().stream()
-                .filter(userFriends::contains)
                 .map(users::get)
                 .collect(Collectors.toList());
     }

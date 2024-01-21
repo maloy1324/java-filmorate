@@ -13,11 +13,7 @@ public interface FilmRepository {
 
     List<Film> findAll();
 
-    boolean addLike(Long userId, Long filmId);
-
     boolean existsFilmById(Long filmId);
-
-    boolean removeLike(Long userId, Long filmId);
 
     List<Film> findPopularFilms(int count);
 }

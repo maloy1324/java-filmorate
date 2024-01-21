@@ -13,13 +13,7 @@ public interface UserRepository {
 
     User update(User user);
 
-    void addFriend(Long userId, Long friendId);
-
     List<User> findAllFriends(Long userId);
-
-    void deleteFriendById(Long userId, Long friendId);
-
-    List<User> findCommonFriends(Long userId, Long otherId);
 
     boolean existsUserById(Long userId);
 }
