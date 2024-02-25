@@ -44,3 +44,6 @@ build/
 
 *.db
 db/*
+
+**/src/main/resources/test.sql
+**/src/main/resources/testdb.sql

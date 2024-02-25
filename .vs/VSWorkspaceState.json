@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\.github",
+    "\\src",
+    "\\src\\main",
+    "\\src\\main\\java",
+    "\\src\\main\\java\\ru",
+    "\\src\\main\\java\\ru\\yandex",
+    "\\src\\main\\java\\ru\\yandex\\practicum",
+    "\\src\\main\\java\\ru\\yandex\\practicum\\filmorate",
+    "\\src\\main\\java\\ru\\yandex\\practicum\\filmorate\\constant"
+  ],
+  "SelectedNode": "\\src\\main\\java\\ru\\yandex\\practicum\\filmorate\\constant\\FilmConstants.java",
+  "PreviewInSolutionExplorer": false
+}
