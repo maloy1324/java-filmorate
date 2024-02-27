@@ -23,8 +23,8 @@ public class FilmService {
     private final UserRepository userRepository;
 
     @Autowired
-    public FilmService(@Qualifier("FilmDbRepositoryImpl") FilmRepository filmRepository,
-                       @Qualifier("UserDbRepositoryImpl") UserRepository userRepository) {
+    public FilmService(@Qualifier("filmDbRepositoryImpl") FilmRepository filmRepository,
+                       @Qualifier("userDbRepositoryImpl") UserRepository userRepository) {
         this.filmRepository = filmRepository;
         this.userRepository = userRepository;
     }

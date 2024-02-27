@@ -16,8 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-@Repository
-@Qualifier("FilmDbRepositoryImpl")
+@Repository(value = "filmDbRepositoryImpl")
 public class FilmDbRepositoryImpl implements FilmRepository {
 
     private final JdbcTemplate jdbcTemplate;

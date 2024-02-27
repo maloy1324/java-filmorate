@@ -20,7 +20,7 @@ public class UserService {
 
     private final UserRepository repository;
 
-    public UserService(@Qualifier("UserDbRepositoryImpl") UserRepository repository) {
+    public UserService(@Qualifier("userDbRepositoryImpl") UserRepository repository) {
         this.repository = repository;
     }
 
