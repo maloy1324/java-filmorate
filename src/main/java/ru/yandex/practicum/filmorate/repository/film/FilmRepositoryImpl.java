@@ -15,14 +15,14 @@ public class FilmRepositoryImpl implements FilmRepository {
     private final Map<Long, Film> films = new HashMap<>();
 
     @Override
-    public Film save(Film film) {
+    public Film saveFilm(Film film) {
         film.setId(generateId());
         films.put(film.getId(), film);
         return film;
     }
 
     @Override
-    public Film update(Film film) {
+    public Film updateFilm(Film film) {
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
             return film;
@@ -31,12 +31,27 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
+    public boolean addLike(Long filmId, Long userId) {
+        return films.get(filmId).getLikes().add(userId);
+    }
+
+    @Override
+    public void deleteFilm(Long id) {
+        films.remove(id);
+    }
+
+    @Override
+    public boolean removeLike(Long filmId, Long userId) {
+        return films.get(filmId).getLikes().remove(userId);
+    }
+
+    @Override
     public Film getFilmById(Long id) {
         return films.get(id);
     }
 
     @Override
-    public List<Film> findAll() {
+    public List<Film> getAllFilms() {
         return new ArrayList<>(films.values());
     }
 

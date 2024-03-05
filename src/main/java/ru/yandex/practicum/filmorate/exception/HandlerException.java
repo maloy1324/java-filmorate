@@ -28,6 +28,14 @@ public class HandlerException {
                 .build(), e.getStatus());
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ResponseError> badRequest(BadRequestException e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(ResponseError.builder()
+                .message(e.getMessage())
+                .build(), e.getStatus());
+    }
+
     @ExceptionHandler(NumberFormatException.class)
     public ResponseEntity<ResponseError> numberFormat(NumberFormatException e) {
         log.error(e.getMessage());
