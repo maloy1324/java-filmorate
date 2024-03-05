@@ -59,6 +59,14 @@ public class FilmService {
         log.info("Пользователь (ID :{}) добавил фильм (ID:{}) в понравишееся", userId, id);
     }
 
+    public void deleteFilm(Long id) {
+        boolean isExists = filmRepository.existsFilmById(id);
+        if (!isExists) {
+            throw new NotFoundException("Фильм не найден", NOT_FOUND);
+        }
+        filmRepository.deleteFilm(id);
+    }
+
     public void removeLike(Long id, Long userId) {
         checkId(id, userId);
         boolean likeRemoved = filmRepository.removeLike(id, userId);

@@ -72,7 +72,7 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     public List<Film> getAllFilms() {
         String sql = "SELECT f.*," +
                 "       M.NAME                                                                AS mpa_name," +
-                "       (SELECT GROUP_CONCAT(GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
+                "       (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
                 "       (SELECT GROUP_CONCAT(NAME)" +
                 "        FROM GENRES" +
                 "        WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list," +
@@ -138,7 +138,7 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     public List<Film> findPopularFilms(int count) {
         String sql = "SELECT f.*," +
                 "       M.NAME                                                                AS mpa_name," +
-                "       (SELECT GROUP_CONCAT(GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
+                "       (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
                 "       (SELECT GROUP_CONCAT(NAME)" +
                 "        FROM GENRES" +
                 "        WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list," +
