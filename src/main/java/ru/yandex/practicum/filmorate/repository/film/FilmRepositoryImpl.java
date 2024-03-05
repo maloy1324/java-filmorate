@@ -36,9 +36,8 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public boolean deleteFilm(Long id) {
+    public void deleteFilm(Long id) {
         films.remove(id);
-        return existsFilmById(id);
     }
 
     @Override

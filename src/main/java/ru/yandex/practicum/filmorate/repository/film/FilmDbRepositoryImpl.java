@@ -118,9 +118,8 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public boolean deleteFilm(Long id) {
+    public void deleteFilm(Long id) {
         jdbcTemplate.update("DELETE FROM FILMS WHERE ID = ?", id);
-        return existsFilmById(id);
     }
 
     @Override
