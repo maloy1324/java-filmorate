@@ -59,6 +59,10 @@ public class FilmService {
         log.info("Пользователь (ID :{}) добавил фильм (ID:{}) в понравишееся", userId, id);
     }
 
+    public void deleteFilm(Long id) {
+        filmRepository.deleteFilm(id);
+    }
+
     public void removeLike(Long id, Long userId) {
         checkId(id, userId);
         boolean likeRemoved = filmRepository.removeLike(id, userId);

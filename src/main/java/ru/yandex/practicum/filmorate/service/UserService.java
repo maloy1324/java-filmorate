@@ -32,6 +32,10 @@ public class UserService {
         return user;
     }
 
+    public void deleteUser(Long accountId) {
+        repository.deleteUser(accountId);
+    }
+
     public Collection<User> getUsers() {
         return repository.getAllUsers();
     }
