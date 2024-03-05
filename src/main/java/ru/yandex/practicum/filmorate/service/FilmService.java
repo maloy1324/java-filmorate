@@ -60,7 +60,10 @@ public class FilmService {
     }
 
     public void deleteFilm(Long id) {
-        filmRepository.deleteFilm(id);
+        boolean isDeleted = filmRepository.deleteFilm(id);
+        if (!isDeleted) {
+            throw new NotFoundException("Фильм не найден", NOT_FOUND);
+        }
     }
 
     public void removeLike(Long id, Long userId) {

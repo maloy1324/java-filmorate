@@ -17,7 +17,7 @@ public interface UserRepository {
 
     boolean addFriend(Long userId, Long friendId);
 
-    void deleteUser(Long id);
+    boolean deleteUser(Long id);
 
     void deleteFriend(Long id, Long friendId);
 

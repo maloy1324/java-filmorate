@@ -17,7 +17,7 @@ public interface FilmRepository {
 
     boolean removeLike(Long filmId, Long userId);
 
-    void deleteFilm(Long id);
+    boolean deleteFilm(Long id);
 
     boolean existsFilmById(Long filmId);
 

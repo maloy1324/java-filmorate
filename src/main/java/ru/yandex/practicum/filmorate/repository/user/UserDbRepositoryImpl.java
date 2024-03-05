@@ -137,8 +137,9 @@ public class UserDbRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void deleteUser(Long id) {
+    public boolean deleteUser(Long id) {
         jdbcTemplate.update("DELETE FROM USERS WHERE ID = ?", id);
+        return existsUserById(id);
     }
 
     @Override

@@ -51,8 +51,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void deleteUser(Long id) {
+    public boolean deleteUser(Long id) {
         users.remove(id);
+        return existsUserById(id);
     }
 
     @Override

@@ -33,7 +33,10 @@ public class UserService {
     }
 
     public void deleteUser(Long accountId) {
-        repository.deleteUser(accountId);
+        boolean isDeleted = repository.deleteUser(accountId);
+        if (!isDeleted) {
+            throw new NotFoundException("Пользователь с id " + accountId + " не найден", NOT_FOUND);
+        }
     }
 
     public Collection<User> getUsers() {
