@@ -13,6 +13,10 @@ import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -172,5 +176,32 @@ public class FilmService {
         if (!filmRepository.existsFilmById(id)) {
             throw new NotFoundException("Фильма с ID: " + id + " не существует", NOT_FOUND);
         }
+    }
+
+    public List<Film> search(String query, String by) {
+        if (query == null) {
+            return filmRepository.getAllFilmSortedByPopular();
+        }
+        List<Film> allFilms = (List<Film>) findAll();
+        List<Film> result;
+        if (by.contains("title") && by.contains("director")) {
+            System.out.println("1111111111111111");
+            result = allFilms.stream()
+                    .filter(f -> f.getName().toLowerCase().contains(query.toLowerCase()))
+                    .collect(Collectors.toList());
+        } else if (by.contains("title")){
+            System.out.println("2222222222222222");
+            result = allFilms.stream()
+                    .filter(f -> f.getName().toLowerCase().contains(query.toLowerCase()))
+                    .collect(Collectors.toList());
+        } else {
+            result = allFilms.stream()
+                    .filter(f -> f.getName().contains(query))
+                    .collect(Collectors.toList());
+        }
+        if (result.isEmpty()){
+            throw new NotFoundException("Поиск по запросу: " + query + " не дал результата", NOT_FOUND);
+        }
+        return result;
     }
 }
