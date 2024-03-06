@@ -68,6 +68,12 @@ public class FilmRepositoryImpl implements FilmRepository {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Film> findCommonFilms(Long userId, Long otherUserId) {
+        //Ин мемори репозиторий же не используется? Оставлю так до лучших времен.
+        return List.of();
+    }
+
     private Long generateId() {
         return ++globalId;
     }

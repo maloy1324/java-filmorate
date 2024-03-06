@@ -22,4 +22,6 @@ public interface FilmRepository {
     boolean existsFilmById(Long filmId);
 
     List<Film> findPopularFilms(int count);
+
+    List<Film> findCommonFilms(Long userId, Long otherUserId);
 }
