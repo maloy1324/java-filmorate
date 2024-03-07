@@ -10,8 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -89,6 +89,66 @@ public class FilmService {
 
     public Collection<Film> findAll() {
         return filmRepository.getAllFilms();
+    }
+
+    public List<Film> findRecommendedFilms(Integer userId) {
+        if (!userRepository.existsUserById((long) userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
+        }
+        Map<Integer, List<Integer>> usersIDLikesIDSimilarTaste = filmRepository.getUsersIDLikesIDSimilarTaste(userId);
+        List<Integer> userLikes = usersIDLikesIDSimilarTaste.remove(userId);
+        Map<Integer, Long> intersectionFrequency = getIntersectionFrequency(userLikes, usersIDLikesIDSimilarTaste);
+        LinkedList<Integer> recommendedFilmsIdInOrder = getRecommendedFilmsIdInOrder(
+                userLikes,
+                usersIDLikesIDSimilarTaste,
+                intersectionFrequency
+        );
+        List<Film> recommendedFilms = filmRepository.getFilmsByFilmsId(recommendedFilmsIdInOrder);
+        return sortFilmsByOrder(recommendedFilmsIdInOrder, recommendedFilms);
+    }
+
+    private List<Film> sortFilmsByOrder(LinkedList<Integer> filmsIdOrder, List<Film> films) {
+        Map<Long, Film> filmsIdFilms = films.stream()
+                .collect(Collectors.toMap(Film::getId, film -> film));
+        LinkedList<Film> filmsOrder = new LinkedList<>();
+        for (Integer id : filmsIdOrder) {
+            filmsOrder.add(filmsIdFilms.get((long)id));
+        }
+        return filmsOrder;
+    }
+
+    private LinkedList<Integer> getRecommendedFilmsIdInOrder(List<Integer> userLikes,
+                                                             Map<Integer, List<Integer>> usersLikes,
+                                                             Map<Integer, Long> intersectionFrequency) {
+        LinkedList<Integer> recommendedFilmsId = new LinkedList<>();
+        for (Integer id : intersectionFrequency.keySet()) {
+            List<Integer> filmsId = usersLikes.get(id);
+            for (Integer filmId : filmsId) {
+                if (!recommendedFilmsId.contains(filmId) && !userLikes.contains(filmId))
+                    recommendedFilmsId.add(filmId);
+            }
+        }
+        return recommendedFilmsId;
+    }
+
+    private Map<Integer, Long> getIntersectionFrequency(List<Integer> userLikes,
+                                                        Map<Integer, List<Integer>> usersLikes) {
+        // Ключ -- id пользователя, значение -- частота пересечений его лайков с лайками целевого пользователя.
+        Map<Integer, Long> intersectionFrequency = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> entry : usersLikes.entrySet()) {
+            long frequency = entry.getValue().stream()
+                    .filter(userLikes::contains)
+                    .count();
+            intersectionFrequency.put(entry.getKey(), frequency);
+        }
+        // Сортировка в порядке уменьшения частоты пересечений лайков.
+        return intersectionFrequency.entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
     private void checkId(Long id, Long userId) {
