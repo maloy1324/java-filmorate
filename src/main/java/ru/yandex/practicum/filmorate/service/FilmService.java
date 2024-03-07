@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -89,6 +90,19 @@ public class FilmService {
 
     public Collection<Film> findAll() {
         return filmRepository.getAllFilms();
+    }
+
+    public List<Film> findCommonFilms(Long userId, Long otherUserId) {
+        if (userId.equals(otherUserId)) {
+            throw new BadRequestException("Запрос общих фильмов у одного и того же пользователя", BAD_REQUEST);
+        }
+        if (!userRepository.existsUserById(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
+        }
+        if (!userRepository.existsUserById(otherUserId)) {
+            throw new NotFoundException("Пользователь с id " + otherUserId + " не найден", NOT_FOUND);
+        }
+        return filmRepository.findCommonFilms(userId, otherUserId);
     }
 
     public List<Film> findRecommendedFilms(Integer userId) {

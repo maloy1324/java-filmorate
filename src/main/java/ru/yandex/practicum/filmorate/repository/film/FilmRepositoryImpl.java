@@ -69,6 +69,12 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
+    public List<Film> findCommonFilms(Long userId, Long otherUserId) {
+        //Ин мемори репозиторий же не используется? Оставлю так до лучших времен.
+        return List.of();
+    }
+
+    @Override
     public Map<Integer, List<Integer>> getUsersIDLikesIDSimilarTaste(Integer userId) {
         return null;
     }

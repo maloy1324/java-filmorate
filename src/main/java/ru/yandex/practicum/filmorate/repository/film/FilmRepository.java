@@ -24,6 +24,8 @@ public interface FilmRepository {
 
     List<Film> findPopularFilms(int count);
 
+    List<Film> findCommonFilms(Long userId, Long otherUserId);
+
     Map<Integer, List<Integer>> getUsersIDLikesIDSimilarTaste(Integer userId);
 
     List<Film> getFilmsByFilmsId(List<Integer> filmsId);
