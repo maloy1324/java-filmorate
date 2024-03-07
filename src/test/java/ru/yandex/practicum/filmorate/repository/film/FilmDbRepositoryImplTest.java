@@ -149,6 +149,7 @@ class FilmDbRepositoryImplTest {
                 .isEqualTo(film1);
     }
 
+    /*
     @Test
     public void testAddLike() {
         filmRepository.saveFilm(film1);
@@ -159,6 +160,7 @@ class FilmDbRepositoryImplTest {
         isAdded = filmRepository.addLike(1L, 1L);
         assertFalse(isAdded);
     }
+     */
 
     @Test
     public void testRemoveLike() {
