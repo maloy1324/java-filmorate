@@ -154,6 +154,27 @@ public class FilmDbRepositoryImpl implements FilmRepository {
         return jdbcTemplate.query(sql, new FilmMapper(), count);
     }
 
+    @Override
+    public List<Film> findCommonFilms(Long userId, Long otherUserId) {
+        String sqlForCommonFilmsId = "SELECT fl.FILM_ID " +
+                "FROM FILMS_LIKES AS fl " +
+                "WHERE fl.USER_ID = ? AND fl.FILM_ID IN (" +
+                    "SELECT FILM_ID " +
+                    "FROM FILMS_LIKES " +
+                    "WHERE USER_ID = ?" +
+                ")";
+        String sql = "SELECT " +
+                "f.*, " +
+                "M.NAME AS mpa_name, " +
+                "(SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST, " +
+                "(SELECT GROUP_CONCAT(NAME) FROM GENRES WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list, " +
+                "(SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES " +
+                "FROM FILMS AS f " +
+                "LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
+                "WHERE f.id IN (" + sqlForCommonFilmsId + ");";
+        return jdbcTemplate.query(sql, new FilmMapper(), userId, otherUserId);
+    }
+
     private void insertFilmGenres(Film film) {
         if (film.getGenres() == null) {
             return;
