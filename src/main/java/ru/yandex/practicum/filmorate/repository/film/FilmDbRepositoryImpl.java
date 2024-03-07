@@ -15,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository(value = "filmDbRepositoryImpl")
 public class FilmDbRepositoryImpl implements FilmRepository {
@@ -211,7 +210,7 @@ public class FilmDbRepositoryImpl implements FilmRepository {
 
     private Map<Integer, List<Integer>> getUsersLikes(SqlRowSet rowSet) {
         // Ключ -- id пользователя, значение -- множество id его фильмов.
-        Map<Integer, List<Integer>> usersLikes =new HashMap<>();
+        Map<Integer, List<Integer>> usersLikes = new HashMap<>();
         if (!rowSet.isBeforeFirst())
             return usersLikes;
         rowSet.next();
