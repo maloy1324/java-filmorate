@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -23,8 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
+@Sql(scripts = "/test_schema.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql("/test_data.sql")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class FilmDbRepositoryImplTest {
     private final JdbcTemplate jdbcTemplate;
     private FilmRepository filmRepository;
@@ -149,7 +151,6 @@ class FilmDbRepositoryImplTest {
                 .isEqualTo(film1);
     }
 
-    /*
     @Test
     public void testAddLike() {
         filmRepository.saveFilm(film1);
@@ -160,7 +161,6 @@ class FilmDbRepositoryImplTest {
         isAdded = filmRepository.addLike(1L, 1L);
         assertFalse(isAdded);
     }
-     */
 
     @Test
     public void testRemoveLike() {
