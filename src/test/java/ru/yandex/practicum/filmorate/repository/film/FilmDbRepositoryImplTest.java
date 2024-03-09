@@ -19,8 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @Sql(scripts = "/test_schema.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -182,5 +181,23 @@ class FilmDbRepositoryImplTest {
 
         isExists = filmRepository.existsFilmById(1L);
         assertTrue(isExists);
+    }
+
+    @Test
+    public void testGetAllFilmIfRequestParametersIsEmpty() {
+        List<Film> allFilms = List.of(film1, film2, film3);
+
+        List<Film> searchResult = filmRepository.getAllFilmIfRequestParametersIsEmpty();
+
+        assertTrue(allFilms.containsAll(searchResult));
+    }
+
+    @Test
+    public void testGetAllFilmByRequestParameter() {
+        List<Film> allFilms = List.of(film1, film2, film3);
+
+        List<Film> searchResult = filmRepository.getAllFilmByRequestParameter("w fi", "title", null);
+
+        assertTrue(allFilms.containsAll(searchResult));
     }
 }

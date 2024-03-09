@@ -68,9 +68,14 @@ public class FilmRepositoryImpl implements FilmRepository {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<Film> getAllFilmSortedByPopular() {
+
+    public List<Film> getAllFilmIfRequestParametersIsEmpty() {
         return null;
+    }
+
+    @Override
+    public List<Film> getAllFilmByRequestParameter(String query, String parameter1, String parameter2) {
+        return List.of();
     }
 
     @Override

@@ -156,21 +156,41 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public List<Film> getAllFilmSortedByPopular() {
+    public List<Film> getAllFilmByRequestParameter(String query, String parameter1, String parameter2) {
         String sql = "SELECT f.*," +
-                "       M.NAME                                                                AS mpa_name," +
-                "       (SELECT GROUP_CONCAT(GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
-                "       (SELECT GROUP_CONCAT(NAME)" +
-                "        FROM GENRES" +
-                "        WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list," +
-                "       (SELECT GROUP_CONCAT(USER_ID)" +
-                "        FROM PUBLIC.FILMS_LIKES" +
-                "        WHERE FILM_ID = f.ID)                                                AS LIKES " +
-                "FROM FILMS AS f" +
-                "         LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID" +
-                "         LEFT JOIN PUBLIC.FILMS_LIKES FL on F.ID = FL.FILM_ID " +
-                "GROUP BY f.ID " +
-                "ORDER BY COUNT(FL.USER_ID) DESC, F.ID";
+                "     m.NAME AS mpa_name," +
+                "     (SELECT STRING_AGG(GENRE_ID::CHARACTER VARYING, ',' ORDER BY GENRE_ID) FROM FILMS_GENRES " +
+                "     WHERE FILM_ID = f.ID) AS GENRES_ID_LIST," +
+                "     (SELECT STRING_AGG(NAME, ',') FROM GENRES g WHERE ID IN " +
+                "     (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.ID)) AS GENRES_LIST," +
+                "     (SELECT string_agg(USER_ID::CHARACTER VARYING, ',') " +
+                "     FROM PUBLIC.FILMS_LIKES " +
+                "     WHERE FILM_ID = f.ID) AS LIKES " +
+                "FROM FILMS f " +
+                "LEFT JOIN MPA m ON m.ID = f.MPA_ID " +
+                "LEFT JOIN PUBLIC.FILMS_LIKES FL on f.ID = FL.FILM_ID " +
+                "WHERE ? IS NOT NULL AND f.NAME ILIKE ?" +
+                "GROUP BY f.ID, mpa_name " +
+                "ORDER BY COUNT(FL.USER_ID) DESC, f.ID";
+        return jdbcTemplate.query(sql, new FilmMapper(), parameter1, query);
+    }
+
+    @Override
+    public List<Film> getAllFilmIfRequestParametersIsEmpty() {
+        String sql = "SELECT f.*," +
+                "     m.NAME as mpa_name," +
+                "     (SELECT STRING_AGG(GENRE_ID::CHARACTER VARYING, ',' ORDER BY GENRE_ID) FROM FILMS_GENRES" +
+                "     WHERE FILM_ID = f.ID) AS GENRES_ID_LIST," +
+                "     (SELECT STRING_AGG(NAME, ',') FROM GENRES WHERE ID IN " +
+                "     (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.ID)) AS GENRES_LIST," +
+                "     (SELECT STRING_AGG(USER_ID::CHARACTER VARYING, ',') " +
+                "     FROM PUBLIC.FILMS_LIKES " +
+                "     WHERE FILM_ID = f.ID) AS LIKES " +
+                "FROM FILMS f " +
+                "LEFT JOIN MPA m ON m.ID = f.MPA_ID " +
+                "LEFT JOIN PUBLIC.FILMS_LIKES FL ON f.ID = FL.FILM_ID " +
+                "GROUP BY f.ID, mpa_name " +
+                "ORDER BY COUNT(FL.USER_ID) DESC, f.ID";
         return jdbcTemplate.query(sql, new FilmMapper());
     }
 
