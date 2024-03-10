@@ -74,6 +74,16 @@ public class FilmRepositoryImpl implements FilmRepository {
         return List.of();
     }
 
+    @Override
+    public Map<Integer, List<Integer>> getUsersIDLikesIDSimilarTaste(Integer userId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getFilmsByFilmsId(List<Integer> filmsId) {
+        return null;
+    }
+
     private Long generateId() {
         return ++globalId;
     }

@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -173,6 +174,54 @@ public class FilmDbRepositoryImpl implements FilmRepository {
                 "LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
                 "WHERE f.id IN (" + sqlForCommonFilmsId + ");";
         return jdbcTemplate.query(sql, new FilmMapper(), userId, otherUserId);
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getUsersIDLikesIDSimilarTaste(Integer userId) {
+        // Запрос на лайки пользователя.
+        String sqlUserLikes = "SELECT fl.FILM_ID " +
+                "FROM FILMS_LIKES AS fl " +
+                "WHERE fl.USER_ID = ?";
+        // Запрос на id пользователей с пересечением лайков с целевым пользователем.
+        String sqlUsersIdSimilarTaste = "SELECT USER_ID " +
+                "FROM FILMS_LIKES " +
+                "WHERE FILM_ID IN (" + sqlUserLikes + ")";
+        String sql = "SELECT FILM_ID, USER_ID " +
+                "FROM FILMS_LIKES " +
+                "WHERE USER_ID IN (" + sqlUsersIdSimilarTaste + ");";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, userId);
+        return getUsersLikes(rowSet);
+    }
+
+    @Override
+    public List<Film> getFilmsByFilmsId(List<Integer> filmsId) {
+        String inSql = String.join(",", Collections.nCopies(filmsId.size(), "?"));
+        String sql = "SELECT " +
+                "f.*, " +
+                "M.NAME AS mpa_name, " +
+                "(SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST, " +
+                "(SELECT GROUP_CONCAT(NAME) FROM GENRES WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list, " +
+                "(SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES " +
+                "FROM FILMS AS f " +
+                "LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
+                "WHERE f.id IN (%s);";
+        return jdbcTemplate.query(String.format(sql, inSql),  new FilmMapper(), filmsId.toArray());
+    }
+
+    private Map<Integer, List<Integer>> getUsersLikes(SqlRowSet rowSet) {
+        // Ключ -- id пользователя, значение -- множество id его фильмов.
+        Map<Integer, List<Integer>> usersLikes = new HashMap<>();
+        if (!rowSet.isBeforeFirst())
+            return usersLikes;
+        rowSet.next();
+        do {
+            int filmId = rowSet.getInt("FILM_ID");
+            int userId = rowSet.getInt("USER_ID");
+            if (!usersLikes.containsKey(userId))
+                usersLikes.put(userId, new ArrayList<>());
+            usersLikes.get(userId).add(filmId);
+        } while (rowSet.next());
+        return usersLikes;
     }
 
     private void insertFilmGenres(Film film) {
