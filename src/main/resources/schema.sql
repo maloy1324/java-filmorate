@@ -1,4 +1,3 @@
-drop table if exists GENRES, MPA, FILMS, FILMS_GENRES, USERS, FILMS_LIKES, FRIENDSHIPS;
 
 create table IF NOT EXISTS GENRES
 (

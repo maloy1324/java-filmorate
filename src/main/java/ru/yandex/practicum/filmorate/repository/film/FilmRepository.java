@@ -27,7 +27,6 @@ public interface FilmRepository {
     public List<Film> getAllFilmIfRequestParametersIsEmpty();
 
     List<Film> getAllFilmByRequestParameter(String query, String parameter1, String parameter2);
-    List<Film> getAllFilmSortedByPopular();
 
     List<Film> findCommonFilms(Long userId, Long otherUserId);
 
