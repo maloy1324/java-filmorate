@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 
-import static ru.yandex.practicum.filmorate.constant.FilmConstants.SIZE_OF_POPULAR_FILMS;
+import static ru.yandex.practicum.filmorate.constant.Constants.DEFAULT_COUNT;
 
 @Slf4j
 @AllArgsConstructor
@@ -60,7 +60,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> findPopularFilms(@RequestParam(defaultValue = SIZE_OF_POPULAR_FILMS) String count) {
+    public List<Film> findPopularFilms(@RequestParam(defaultValue = DEFAULT_COUNT) String count) {
         return filmService.findPopularFilms(count);
     }
 
