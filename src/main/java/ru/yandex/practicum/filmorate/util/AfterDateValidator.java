@@ -4,7 +4,7 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
 
-import static ru.yandex.practicum.filmorate.constant.FilmConstants.DATE_FORMATTER;
+import static ru.yandex.practicum.filmorate.constant.Constants.DATE_FORMATTER;
 
 public class AfterDateValidator implements ConstraintValidator<AfterDate, LocalDate> {
     private LocalDate beforeDate;
