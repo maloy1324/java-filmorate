@@ -5,6 +5,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidateException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -15,6 +18,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
+@SuppressWarnings("ALL")
 @Repository(value = "filmDbRepositoryImpl")
 public class FilmDbRepositoryImpl implements FilmRepository {
 
@@ -45,6 +52,7 @@ public class FilmDbRepositoryImpl implements FilmRepository {
         Long filmId = Objects.requireNonNull(keyHolder.getKey()).longValue();
         film.setId(filmId);
         insertFilmGenres(film);
+        insertFilmDirector(film);
         return getFilmById(filmId);
     }
 
@@ -186,6 +194,42 @@ public class FilmDbRepositoryImpl implements FilmRepository {
         jdbcTemplate.batchUpdate("INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)", batchArgs);
     }
 
+    public List<Film> getDirectorFilmsSort(int directorId, String sort) {
+        List<Film> filmSort;
+        if (sort.equals("year")) {
+            filmSort = jdbcTemplate.query("SELECT * FROM FILMS WHERE film_id IN " +
+                            "(SELECT film_id FROM DIRECTOR_FILMS WHERE director_id = ?) ORDER BY release_date LIMIT 10",
+                    new FilmMapper(), directorId);
+        } else if (sort.equals("likes")) {
+            filmSort = jdbcTemplate.query("" +
+                            "SELECT f.* " +
+                            "FROM DIRECTOR_FILMS AS fd " +
+                            "LEFT OUTER JOIN FILMS AS f ON fd.film_id = f.film_id " +
+                            "LEFT OUTER JOIN FILMS_LIKES AS fl ON f.film_id = fl.film_id " +
+                            "WHERE fd.director_id = ? " +
+                            "GROUP BY fd.film_id " +
+                            "ORDER BY COUNT(fl.user_id) LIMIT 10",
+                    new FilmMapper(), directorId);
+        } else {
+            throw new ValidateException("Ошибка вывода фильмов режиссера - sort: такой сортировки нет", BAD_REQUEST);
+        }
+        if (filmSort.isEmpty()) {
+            throw new NotFoundException("Нет фильмов по данному режиссеру", NOT_FOUND);
+        } else {
+            return filmSort;
+        }
+    }
+
+    public void insertFilmDirector(Film film) {
+        if (Objects.isNull(film.getDirectors())) {
+            return;
+        }
+        List<Object[]> batchArgs = new ArrayList<>();
+        for (Director director : film.getDirectors()) {
+            batchArgs.add(new Object[]{film.getId(), director.getId()});
+        }
+        jdbcTemplate.batchUpdate("INSERT INTO DIRECTOR_FILMS(FILM_ID, DIRECTOR_ID) VALUES (?, ?)", batchArgs);
+    }
 
     private static class FilmMapper implements RowMapper<Film> {
         @Override
@@ -199,6 +243,7 @@ public class FilmDbRepositoryImpl implements FilmRepository {
                     .mpa(getMpa(rs))
                     .genres(getGenres(rs))
                     .likes(getLikes(rs))
+                    .directors(getDirectors(rs))
                     .build();
         }
 
@@ -235,6 +280,27 @@ public class FilmDbRepositoryImpl implements FilmRepository {
             }
             return genres;
         }
+
+        private Set<Director> getDirectors(ResultSet rs) throws SQLException {
+            Set<Director> directors = new HashSet<>();
+
+            String directorsIdList = rs.getString("DIRECTOR_ID");
+            String directorsList = rs.getString("DIRECTOR_NAME");
+
+            if (directorsIdList != null && directorsList != null) {
+                String[] directorIds = directorsIdList.split(",");
+                String[] directorsName = directorsList.split(",");
+
+                for (int i = 0; i < directorIds.length; i++) {
+                    directors.add(Director.builder()
+                            .id(Long.parseLong(directorIds[i]))
+                            .name(directorsName[i])
+                            .build());
+                }
+            }
+            return directors;
+        }
+
 
         private Mpa getMpa(ResultSet rs) throws SQLException {
             return Mpa.builder()

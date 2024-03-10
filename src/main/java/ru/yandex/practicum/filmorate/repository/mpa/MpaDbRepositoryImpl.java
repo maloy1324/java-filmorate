@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 
+@SuppressWarnings("ALL")
 @Repository
 @RequiredArgsConstructor
 public class MpaDbRepositoryImpl implements MpaRepository {
