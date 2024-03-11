@@ -10,12 +10,13 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @SuppressWarnings("ALL")
 @Component
@@ -48,6 +49,9 @@ public class DirectorDbRepositoryImpl implements DirectorRepository {
 
     @Override
     public Director getDirectorById(Long id) { //получение режиссёра по id
+        if (!existsDirectorById(id)) {
+            throw new NotFoundException("Режиссёр не найден", NOT_FOUND);
+        }
         return jdbcTemplate.queryForObject("SELECT * FROM DIRECTORS WHERE id = ?",
                 new DirectorMapper(), id);
     }
@@ -82,11 +86,11 @@ public class DirectorDbRepositoryImpl implements DirectorRepository {
                 new DirectorMapper(), filmId));
     }
 
-//    @Override
-//    public void addDirectorToFilm(int filmId, int directorId) {
-//        String sqlQuery = "INSERT INTO DIRECTOR_FILMS (FILM_ID, director_id) values (?, ?)";
-//        jdbcTemplate.update(sqlQuery, filmId, directorId);
-//    }
+    @Override
+    public boolean existsDirectorById(Long directorId) {
+        String sql = "SELECT EXISTS(SELECT 1 FROM DIRECTORS WHERE ID = ?)";
+        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, directorId.longValue()));
+    }
 
     private static class DirectorMapper implements RowMapper<Director> {
         @Override

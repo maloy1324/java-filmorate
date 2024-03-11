@@ -6,8 +6,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -18,9 +16,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @SuppressWarnings("ALL")
 @Repository(value = "filmDbRepositoryImpl")
@@ -62,15 +57,20 @@ public class FilmDbRepositoryImpl implements FilmRepository {
         if (!existsFilmById(id)) {
             return null;
         }
-        String sqlQuery = "SELECT " +
-                "f.*, M.NAME AS mpa_name, " +
-                "GROUP_CONCAT(G2.ID ORDER BY G2.ID) AS GENRES_ID_LIST, " +
-                "GROUP_CONCAT(G2.NAME ORDER BY G2.ID) AS genres_list, " +
-                "(SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES " +
+        String sqlQuery = "SELECT f.*, " +
+                "       M.NAME                                                                      AS MPA_NAME, " +
+                "       GROUP_CONCAT(G2.ID ORDER BY G2.ID)                                          AS GENRES_ID_LIST, " +
+                "       GROUP_CONCAT(G2.NAME ORDER BY G2.ID)                                        AS genres_list, " +
+                "       (SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES, " +
+                "       GROUP_CONCAT(D.DIRECTOR_ID ORDER BY D.DIRECTOR_ID)                          AS DIRECTOR_ID_LIST, " +
+                "       GROUP_CONCAT(D1.NAME ORDER BY D1.ID)                                        AS DIRECTORS_LIST " +
                 "FROM FILMS AS f " +
-                "LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
-                "LEFT JOIN PUBLIC.FILMS_GENRES FG on f.ID = FG.FILM_ID " +
-                "LEFT JOIN PUBLIC.GENRES G2 on G2.ID = FG.GENRE_ID " +
+                "         LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
+                "         LEFT JOIN PUBLIC.FILMS_GENRES FG on f.ID = FG.FILM_ID " +
+                "         LEFT JOIN PUBLIC.GENRES G2 on G2.ID = FG.GENRE_ID " +
+                "         LEFT JOIN (SELECT FILM_ID, DIRECTOR_ID " +
+                "      FROM PUBLIC.DIRECTOR_FILMS) AS D ON f.ID = D.FILM_ID " +
+                "         LEFT JOIN PUBLIC.DIRECTORS D1 on D1.ID = D.DIRECTOR_ID " +
                 "WHERE f.id = ? " +
                 "GROUP BY f.ID";
 
@@ -79,16 +79,20 @@ public class FilmDbRepositoryImpl implements FilmRepository {
 
     @Override
     public List<Film> getAllFilms() {
-        String sql = "SELECT f.*," +
-                "       M.NAME                                                                AS mpa_name," +
-                "       (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
-                "       (SELECT GROUP_CONCAT(NAME)" +
-                "        FROM GENRES" +
-                "        WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list," +
-                "       (SELECT GROUP_CONCAT(USER_ID)" +
-                "        FROM PUBLIC.FILMS_LIKES" +
-                "        WHERE FILM_ID = f.ID)                                                AS LIKES " +
-                "FROM FILMS AS f" +
+        String sql = "SELECT f.*, " +
+                "       M.NAME                                                                                   AS MPA_NAME, " +
+                "       (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST, " +
+                "       (SELECT GROUP_CONCAT(DIRECTOR_ID ORDER BY DIRECTOR_ID) FROM DIRECTOR_FILMS WHERE FILM_ID = f.id) AS DIRECTOR_ID_LIST, " +
+                "       (SELECT GROUP_CONCAT(NAME) " +
+                "        FROM GENRES " +
+                "        WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id))                   AS genres_list, " +
+                "       (SELECT GROUP_CONCAT(NAME) " +
+                "        FROM DIRECTORS " +
+                "        WHERE ID IN (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS WHERE FILM_ID = f.id))                   AS DIRECTORS_LIST, " +
+                "       (SELECT GROUP_CONCAT(USER_ID) " +
+                "        FROM PUBLIC.FILMS_LIKES " +
+                "        WHERE FILM_ID = f.ID)                                                                   AS LIKES " +
+                "FROM FILMS AS f " +
                 "         LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID";
         return jdbcTemplate.query(sql, new FilmMapper());
     }
@@ -106,11 +110,14 @@ public class FilmDbRepositoryImpl implements FilmRepository {
                 film.getDuration(),
                 film.getMpa().getId(),
                 film.getId());
+                film.getDirectors();
 
 
         jdbcTemplate.update("DELETE FROM FILMS_GENRES WHERE FILM_ID = ?", film.getId());
+        jdbcTemplate.update("DELETE FROM DIRECTOR_FILMS WHERE FILM_ID = ?", film.getId());
 
         insertFilmGenres(film);
+        insertFilmDirector(film);
         return getFilmById(film.getId());
     }
 
@@ -146,16 +153,20 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     @Override
     public List<Film> findPopularFilms(int count) {
         String sql = "SELECT f.*," +
-                "       M.NAME                                                                AS mpa_name," +
-                "       (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
-                "       (SELECT GROUP_CONCAT(NAME)" +
-                "        FROM GENRES" +
-                "        WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list," +
-                "       (SELECT GROUP_CONCAT(USER_ID)" +
-                "        FROM PUBLIC.FILMS_LIKES" +
-                "        WHERE FILM_ID = f.ID)                                                AS LIKES " +
+                "     M.NAME                                                                AS mpa_name," +
+                "     (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
+                "     (SELECT GROUP_CONCAT(NAME) " +
+                "     FROM GENRES " +
+                "     WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list, " +
+                "     (SELECT GROUP_CONCAT(DIRECTOR_ID) " +
+                "     FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
+                "     (SELECT GROUP_CONCAT(NAME) FROM directors d where ID in " +
+                "     (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
+                "     (SELECT GROUP_CONCAT(USER_ID) " +
+                "     FROM PUBLIC.FILMS_LIKES " +
+                "     WHERE FILM_ID = f.ID)                                                AS LIKES " +
                 "FROM FILMS AS f" +
-                "         LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID" +
+                "         LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
                 "         LEFT JOIN PUBLIC.FILMS_LIKES FL on F.ID = FL.FILM_ID " +
                 "GROUP BY f.ID " +
                 "ORDER BY COUNT(FL.USER_ID) DESC, F.ID " +
@@ -168,16 +179,20 @@ public class FilmDbRepositoryImpl implements FilmRepository {
         String sqlForCommonFilmsId = "SELECT fl.FILM_ID " +
                 "FROM FILMS_LIKES AS fl " +
                 "WHERE fl.USER_ID = ? AND fl.FILM_ID IN (" +
-                    "SELECT FILM_ID " +
-                    "FROM FILMS_LIKES " +
-                    "WHERE USER_ID = ?" +
+                "SELECT FILM_ID " +
+                "FROM FILMS_LIKES " +
+                "WHERE USER_ID = ?" +
                 ")";
         String sql = "SELECT " +
                 "f.*, " +
-                "M.NAME AS mpa_name, " +
+                "M.NAME AS MPA_NAME, " +
                 "(SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST, " +
                 "(SELECT GROUP_CONCAT(NAME) FROM GENRES WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list, " +
-                "(SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES " +
+                "(SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES, " +
+                "(SELECT GROUP_CONCAT(DIRECTOR_ID) " +
+                "FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
+                "(SELECT GROUP_CONCAT(NAME) FROM directors d where ID in " +
+                "(SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST " +
                 "FROM FILMS AS f " +
                 "LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
                 "WHERE f.id IN (" + sqlForCommonFilmsId + ");";
@@ -206,14 +221,18 @@ public class FilmDbRepositoryImpl implements FilmRepository {
         String inSql = String.join(",", Collections.nCopies(filmsId.size(), "?"));
         String sql = "SELECT " +
                 "f.*, " +
-                "M.NAME AS mpa_name, " +
+                "M.NAME AS MPA_NAME, " +
                 "(SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST, " +
                 "(SELECT GROUP_CONCAT(NAME) FROM GENRES WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list, " +
-                "(SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES " +
+                "(SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES, " +
+                "(SELECT GROUP_CONCAT(DIRECTOR_ID) " +
+                "FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
+                "(SELECT GROUP_CONCAT(NAME) FROM directors d where ID in " +
+                "(SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
                 "FROM FILMS AS f " +
                 "LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
                 "WHERE f.id IN (%s);";
-        return jdbcTemplate.query(String.format(sql, inSql),  new FilmMapper(), filmsId.toArray());
+        return jdbcTemplate.query(String.format(sql, inSql), new FilmMapper(), filmsId.toArray());
     }
 
     private Map<Integer, List<Integer>> getUsersLikes(SqlRowSet rowSet) {
@@ -243,34 +262,8 @@ public class FilmDbRepositoryImpl implements FilmRepository {
         jdbcTemplate.batchUpdate("INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)", batchArgs);
     }
 
-    public List<Film> getDirectorFilmsSort(int directorId, String sort) {
-        List<Film> filmSort;
-        if (sort.equals("year")) {
-            filmSort = jdbcTemplate.query("SELECT * FROM FILMS WHERE film_id IN " +
-                            "(SELECT film_id FROM DIRECTOR_FILMS WHERE director_id = ?) ORDER BY release_date LIMIT 10",
-                    new FilmMapper(), directorId);
-        } else if (sort.equals("likes")) {
-            filmSort = jdbcTemplate.query("" +
-                            "SELECT f.* " +
-                            "FROM DIRECTOR_FILMS AS fd " +
-                            "LEFT OUTER JOIN FILMS AS f ON fd.film_id = f.film_id " +
-                            "LEFT OUTER JOIN FILMS_LIKES AS fl ON f.film_id = fl.film_id " +
-                            "WHERE fd.director_id = ? " +
-                            "GROUP BY fd.film_id " +
-                            "ORDER BY COUNT(fl.user_id) LIMIT 10",
-                    new FilmMapper(), directorId);
-        } else {
-            throw new ValidateException("Ошибка вывода фильмов режиссера - sort: такой сортировки нет", BAD_REQUEST);
-        }
-        if (filmSort.isEmpty()) {
-            throw new NotFoundException("Нет фильмов по данному режиссеру", NOT_FOUND);
-        } else {
-            return filmSort;
-        }
-    }
-
     public void insertFilmDirector(Film film) {
-        if (Objects.isNull(film.getDirectors())) {
+        if (film.getDirectors() == null) {
             return;
         }
         List<Object[]> batchArgs = new ArrayList<>();
@@ -278,6 +271,60 @@ public class FilmDbRepositoryImpl implements FilmRepository {
             batchArgs.add(new Object[]{film.getId(), director.getId()});
         }
         jdbcTemplate.batchUpdate("INSERT INTO DIRECTOR_FILMS(FILM_ID, DIRECTOR_ID) VALUES (?, ?)", batchArgs);
+    }
+
+    @Override
+    public List<Film> loadFilmsOfDirectorSortedByYears(Long directorId) {
+        String sqlQuery =
+                "select f.*, " +
+                        "     m.NAME as mpa_name, " +
+                        "     (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) " +
+                        "     FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST, " +
+                        "     (SELECT GROUP_CONCAT(NAME) FROM genres g where ID in " +
+                        "     (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS GENRES_LIST, " +
+                        "     (SELECT GROUP_CONCAT(DIRECTOR_ID) " +
+                        "     FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
+                        "     (SELECT GROUP_CONCAT(NAME) FROM directors d where ID in " +
+                        "     (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
+                        "     (SELECT GROUP_CONCAT(USER_ID) " +
+                        "     FROM PUBLIC.FILMS_LIKES " +
+                        "     WHERE FILM_ID = f.ID) as LIKES " +
+                        "FROM films f " +
+                        "LEFT JOIN mpa m on m.id = f.mpa_id " +
+                        "LEFT JOIN PUBLIC.FILMS_LIKES FL on F.ID = FL.FILM_ID " +
+                        "LEFT JOIN DIRECTOR_FILMS fd on fd.FILM_ID = f.ID " +
+                        "LEFT JOIN directors d on fd.DIRECTOR_ID = d.ID " +
+                        "where d.ID = ? " +
+                        "group by f.ID, m.name  " +
+                        "ORDER by extract(year from f.release_date), COUNT(FL.USER_ID) DESC, f.ID;";
+        return jdbcTemplate.query(sqlQuery, new FilmMapper(), directorId);
+    }
+
+    @Override
+    public List<Film> loadFilmsOfDirectorSortedByLikes(Long directorId) {
+        String sqlQuery =
+                "select f.*, " +
+                        "     m.NAME as mpa_name, " +
+                        "     (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) " +
+                        "     FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST, " +
+                        "     (SELECT GROUP_CONCAT(NAME) FROM genres g where ID in " +
+                        "     (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS GENRES_LIST, " +
+                        "     (SELECT GROUP_CONCAT(DIRECTOR_ID) " +
+                        "     FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
+                        "     (SELECT GROUP_CONCAT(NAME) FROM directors d where ID in " +
+                        "     (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
+                        "     (SELECT GROUP_CONCAT(USER_ID) " +
+                        "     FROM PUBLIC.FILMS_LIKES " +
+                        "     WHERE FILM_ID = f.ID) as LIKES " +
+                        "FROM films f " +
+                        "LEFT JOIN mpa m on m.id = f.mpa_id " +
+                        "LEFT JOIN PUBLIC.FILMS_LIKES FL on F.ID = FL.FILM_ID " +
+                        "LEFT JOIN DIRECTOR_FILMS fd on fd.FILM_ID = f.ID " +
+                        "LEFT JOIN directors d on fd.DIRECTOR_ID = d.ID " +
+                        "where d.ID = ? " +
+                        "group by f.ID, m.name  " +
+                        "ORDER by COUNT(FL.USER_ID) DESC, f.ID;";
+        return jdbcTemplate.query(sqlQuery, new FilmMapper(), directorId);
     }
 
     private static class FilmMapper implements RowMapper<Film> {
@@ -291,8 +338,8 @@ public class FilmDbRepositoryImpl implements FilmRepository {
                     .duration(rs.getInt("DURATION"))
                     .mpa(getMpa(rs))
                     .genres(getGenres(rs))
-                    .likes(getLikes(rs))
                     .directors(getDirectors(rs))
+                    .likes(getLikes(rs))
                     .build();
         }
 
@@ -333,8 +380,8 @@ public class FilmDbRepositoryImpl implements FilmRepository {
         private Set<Director> getDirectors(ResultSet rs) throws SQLException {
             Set<Director> directors = new HashSet<>();
 
-            String directorsIdList = rs.getString("DIRECTOR_ID");
-            String directorsList = rs.getString("DIRECTOR_NAME");
+            String directorsIdList = rs.getString("DIRECTOR_ID_LIST");
+            String directorsList = rs.getString("DIRECTORS_LIST");
 
             if (directorsIdList != null && directorsList != null) {
                 String[] directorIds = directorsIdList.split(",");

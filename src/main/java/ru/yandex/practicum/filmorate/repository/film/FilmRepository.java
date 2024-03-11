@@ -29,4 +29,8 @@ public interface FilmRepository {
     Map<Integer, List<Integer>> getUsersIDLikesIDSimilarTaste(Integer userId);
 
     List<Film> getFilmsByFilmsId(List<Integer> filmsId);
+
+    List<Film> loadFilmsOfDirectorSortedByYears(Long directorId);
+
+    List<Film> loadFilmsOfDirectorSortedByLikes(Long directorId);
 }
