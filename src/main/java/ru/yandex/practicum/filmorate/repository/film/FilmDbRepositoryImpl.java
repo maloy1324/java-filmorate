@@ -110,7 +110,7 @@ public class FilmDbRepositoryImpl implements FilmRepository {
                 film.getDuration(),
                 film.getMpa().getId(),
                 film.getId());
-                film.getDirectors();
+        film.getDirectors();
 
 
         jdbcTemplate.update("DELETE FROM FILMS_GENRES WHERE FILM_ID = ?", film.getId());
@@ -151,27 +151,26 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public List<Film> findPopularFilms(int count) {
-        String sql = "SELECT f.*," +
-                "     M.NAME                                                                AS mpa_name," +
-                "     (SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES WHERE FILM_ID = f.id) AS GENRES_ID_LIST," +
-                "     (SELECT GROUP_CONCAT(NAME) " +
-                "     FROM GENRES " +
-                "     WHERE ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list, " +
-                "     (SELECT GROUP_CONCAT(DIRECTOR_ID) " +
-                "     FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
-                "     (SELECT GROUP_CONCAT(NAME) FROM directors d where ID in " +
-                "     (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
-                "     (SELECT GROUP_CONCAT(USER_ID) " +
-                "     FROM PUBLIC.FILMS_LIKES " +
-                "     WHERE FILM_ID = f.ID)                                                AS LIKES " +
-                "FROM FILMS AS f" +
-                "         LEFT JOIN PUBLIC.MPA M on M.ID = f.MPA_ID " +
-                "         LEFT JOIN PUBLIC.FILMS_LIKES FL on F.ID = FL.FILM_ID " +
+    public List<Film> findPopularFilms(int count, Long genreId, Long year) {
+        String sql = "SELECT f.*, M.NAME AS mpa_name, " +
+                "(SELECT GROUP_CONCAT(GENRE_ID ORDER BY GENRE_ID) FROM FILMS_GENRES " +
+                "WHERE FILM_ID = f.id) AS GENRES_ID_LIST, " +
+                "(SELECT GROUP_CONCAT(g.NAME) FROM GENRES g " +
+                "WHERE g.ID IN (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.id)) AS genres_list, " +
+                "(SELECT GROUP_CONCAT(USER_ID) FROM PUBLIC.FILMS_LIKES WHERE FILM_ID = f.ID) AS LIKES, " +
+                "(SELECT GROUP_CONCAT(DIRECTOR_ID) " +
+                "FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
+                "(SELECT GROUP_CONCAT(d.NAME) FROM directors d where d.ID in " +
+                "(SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST " +
+                "FROM FILMS AS f " +
+                "LEFT JOIN PUBLIC.MPA M ON M.ID = f.MPA_ID " +
+                "LEFT JOIN PUBLIC.FILMS_LIKES FL ON f.ID = FL.FILM_ID " +
+                "WHERE (? IS NULL OR YEAR(f.RELEASE_DATE) = ?) " + // фильтр по году, если указан
+                "AND (? IS NULL OR f.ID IN (SELECT FILM_ID FROM FILMS_GENRES WHERE GENRE_ID = ?)) " + // фильтр по жанру, если указан
                 "GROUP BY f.ID " +
-                "ORDER BY COUNT(FL.USER_ID) DESC, F.ID " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sql, new FilmMapper(), count);
+                "ORDER BY COUNT(FL.USER_ID) DESC, f.ID " +
+                "LIMIT ?"; // лимит на кол-во фильмов
+        return jdbcTemplate.query(sql, new FilmMapper(), year, year, genreId, genreId, count);
     }
 
     @Override

@@ -82,11 +82,11 @@ public class FilmService {
         log.info("Пользователь (ID :{}) удалил фильм (ID:{}) из понравившихся", userId, id);
     }
 
-    public List<Film> findPopularFilms(String count) {
+    public List<Film> findPopularFilms(String count, Long genreId, Long year) {
         try {
             int size = Integer.parseInt(count);
             log.info("Список популярных фильмов отправлен");
-            return filmRepository.findPopularFilms(size);
+            return filmRepository.findPopularFilms(size, genreId, year);
         } catch (NumberFormatException e) {
             throw new NumberFormatException(e.getMessage());
         }
@@ -130,7 +130,7 @@ public class FilmService {
                 .collect(Collectors.toMap(Film::getId, film -> film));
         LinkedList<Film> filmsOrder = new LinkedList<>();
         for (Integer id : filmsIdOrder) {
-            filmsOrder.add(filmsIdFilms.get((long)id));
+            filmsOrder.add(filmsIdFilms.get((long) id));
         }
         return filmsOrder;
     }
