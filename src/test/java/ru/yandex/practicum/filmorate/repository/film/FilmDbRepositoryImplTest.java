@@ -105,7 +105,7 @@ class FilmDbRepositoryImplTest {
         assertThat(savedFilm)
                 .isNotNull()
                 .usingRecursiveComparison() // проверяем, что значения полей нового
-                .ignoringFields("likes")
+                .ignoringFields("likes", "directors")
                 .isEqualTo(film1);
     }
 
@@ -121,7 +121,7 @@ class FilmDbRepositoryImplTest {
         assertThat(savedFilm)
                 .isNotNull() // проверяем, что объект не равен null
                 .usingRecursiveComparison() // проверяем, что значения полей нового
-                .ignoringFields("likes")
+                .ignoringFields("likes", "directors")
                 .isEqualTo(film1);        // и сохраненного пользователя - совпадают
     }
 
@@ -146,7 +146,7 @@ class FilmDbRepositoryImplTest {
         assertThat(updatedFilm)
                 .isNotNull()
                 .usingRecursiveComparison()
-                .ignoringFields("likes")
+                .ignoringFields("likes", "directors")
                 .isEqualTo(film1);
     }
 

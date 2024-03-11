@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.repository.director.DirectorRepository;
 import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
@@ -22,6 +23,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class FilmService {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
+    @Autowired
+    private DirectorRepository directorRepository;
+
 
     @Autowired
     public FilmService(@Qualifier("filmDbRepositoryImpl") FilmRepository filmRepository,
@@ -163,6 +167,20 @@ public class FilmService {
                         Map.Entry::getKey,
                         Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+    }
+
+    public List<Film> getSortedFilmsByDirectorId(Long directorId, String sortBy) {
+        if (!directorRepository.existsDirectorById(directorId)) {
+            throw new NotFoundException("Режиссёр не найден", NOT_FOUND);
+        }
+        switch (sortBy) {
+            case "year":
+                return filmRepository.loadFilmsOfDirectorSortedByYears(directorId);
+            case "likes":
+                return filmRepository.loadFilmsOfDirectorSortedByLikes(directorId);
+            default:
+                throw new IllegalArgumentException("Неизвестный тип сортировки");
+        }
     }
 
     private void checkId(Long id, Long userId) {

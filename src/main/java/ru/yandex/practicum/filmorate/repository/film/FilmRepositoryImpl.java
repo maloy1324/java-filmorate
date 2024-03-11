@@ -3,10 +3,7 @@ package ru.yandex.practicum.filmorate.repository.film;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -81,6 +78,16 @@ public class FilmRepositoryImpl implements FilmRepository {
 
     @Override
     public List<Film> getFilmsByFilmsId(List<Integer> filmsId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> loadFilmsOfDirectorSortedByYears(Long directorId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> loadFilmsOfDirectorSortedByLikes(Long directorId) {
         return null;
     }
 
