@@ -38,4 +38,6 @@ public class Film {
     private Mpa mpa;
 
     private Set<Long> likes;
+
+    private Set<Director> directors;
 }
