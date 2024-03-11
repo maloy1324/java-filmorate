@@ -3,13 +3,16 @@ package ru.yandex.practicum.filmorate.repository.film;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
 public class FilmRepositoryImpl implements FilmRepository {
-    private Long globalId = 0L;
     private final Map<Long, Film> films = new HashMap<>();
+    private Long globalId = 0L;
 
     @Override
     public Film saveFilm(Film film) {
@@ -58,7 +61,8 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public List<Film> findPopularFilms(int count) {
+    public List<Film> findPopularFilms(int count, Long genreId, Long year) {
+        // не используется
         return films.values().stream()
                 .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
                 .limit(count)

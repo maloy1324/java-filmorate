@@ -22,7 +22,7 @@ public interface FilmRepository {
 
     boolean existsFilmById(Long filmId);
 
-    List<Film> findPopularFilms(int count);
+    List<Film> findPopularFilms(int count, Long genreId, Long year);
 
     public List<Film> getAllFilmIfRequestParametersIsEmpty();
 
