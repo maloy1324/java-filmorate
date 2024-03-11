@@ -45,12 +45,4 @@ public class DirectorService {
     public void deleteDirectorById(Long id) {
         directorRepository.deleteDirectorById(id);
     }
-
-//    public LinkedHashSet<Director> getFilmDirectors(Long filmId) {
-//        return directorRepository.getFilmDirectors(filmId);
-//    }
-
-//    public void addDirectorToFilm(int filmId, int directorId) {
-//        directorRepository.addDirectorToFilm(filmId, directorId);
-//    }
 }
