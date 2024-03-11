@@ -75,7 +75,7 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public List<Film> getAllFilmByRequestParameter(String query, String parameter1, String parameter2) {
+    public List<Film> getAllFilmByRequestParameter(String query, String parameter) {
         return List.of();
     }
 

@@ -14,12 +14,6 @@ import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -201,18 +195,7 @@ public class FilmService {
     public List<Film> search(String query, String by) {
         if (query == null) return filmRepository.getAllFilmIfRequestParametersIsEmpty();
 
-        String parameter1 = null;
-        String parameter2 = null;
         query = "%" + query + "%";
-
-        if (by.contains("title") && by.contains("director")){
-            parameter1 = "title";
-            parameter2 = "director";
-        } else if (by.contains("title")) {
-            parameter1 = "title";
-        } else {
-            parameter2 = "director";
-        }
-        return filmRepository.getAllFilmByRequestParameter(query.toLowerCase(), parameter1, parameter2);
+        return filmRepository.getAllFilmByRequestParameter(query, by);
     }
 }
