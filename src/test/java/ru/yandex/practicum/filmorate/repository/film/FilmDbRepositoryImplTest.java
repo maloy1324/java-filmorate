@@ -105,7 +105,7 @@ class FilmDbRepositoryImplTest {
         assertThat(savedFilm)
                 .isNotNull()
                 .usingRecursiveComparison() // проверяем, что значения полей нового
-                .ignoringFields("likes")
+                .ignoringFields("likes", "directors")
                 .isEqualTo(film1);
     }
 
@@ -121,7 +121,7 @@ class FilmDbRepositoryImplTest {
         assertThat(savedFilm)
                 .isNotNull() // проверяем, что объект не равен null
                 .usingRecursiveComparison() // проверяем, что значения полей нового
-                .ignoringFields("likes")
+                .ignoringFields("likes", "directors")
                 .isEqualTo(film1);        // и сохраненного пользователя - совпадают
     }
 
@@ -146,7 +146,7 @@ class FilmDbRepositoryImplTest {
         assertThat(updatedFilm)
                 .isNotNull()
                 .usingRecursiveComparison()
-                .ignoringFields("likes")
+                .ignoringFields("likes", "directors")
                 .isEqualTo(film1);
     }
 
@@ -182,5 +182,23 @@ class FilmDbRepositoryImplTest {
 
         isExists = filmRepository.existsFilmById(1L);
         assertTrue(isExists);
+    }
+
+    @Test
+    public void testGetAllFilmIfRequestParametersIsEmpty() {
+        List<Film> allFilms = List.of(film1, film2, film3);
+
+        List<Film> searchResult = filmRepository.getAllFilmIfRequestParametersIsEmpty();
+
+        assertTrue(allFilms.containsAll(searchResult));
+    }
+
+    @Test
+    public void testGetAllFilmByRequestParameter() {
+        List<Film> allFilms = List.of(film1, film2, film3);
+
+        List<Film> searchResult = filmRepository.getAllFilmByRequestParameter("w fi", "title");
+
+        assertTrue(allFilms.containsAll(searchResult));
     }
 }

@@ -1,3 +1,5 @@
+-- noinspection SqlResolveForFile
+
 MERGE INTO genres (id, name)
     VALUES (1, 'Комедия'),
            (2, 'Драма'),

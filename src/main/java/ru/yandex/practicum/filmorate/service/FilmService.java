@@ -11,7 +11,11 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
+<<<<<<< HEAD
 import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
+=======
+import ru.yandex.practicum.filmorate.repository.director.DirectorRepository;
+>>>>>>> develop
 import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
@@ -28,6 +32,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class FilmService {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
+    @Autowired
+    private DirectorRepository directorRepository;
+
 
     private final FeedRepository feedRepository;
 
@@ -92,11 +99,11 @@ public class FilmService {
         log.info("Пользователь (ID :{}) удалил фильм (ID:{}) из понравившихся", userId, id);
     }
 
-    public List<Film> findPopularFilms(String count) {
+    public List<Film> findPopularFilms(String count, Long genreId, Long year) {
         try {
             int size = Integer.parseInt(count);
             log.info("Список популярных фильмов отправлен");
-            return filmRepository.findPopularFilms(size);
+            return filmRepository.findPopularFilms(size, genreId, year);
         } catch (NumberFormatException e) {
             throw new NumberFormatException(e.getMessage());
         }
@@ -140,7 +147,7 @@ public class FilmService {
                 .collect(Collectors.toMap(Film::getId, film -> film));
         LinkedList<Film> filmsOrder = new LinkedList<>();
         for (Integer id : filmsIdOrder) {
-            filmsOrder.add(filmsIdFilms.get((long)id));
+            filmsOrder.add(filmsIdFilms.get((long) id));
         }
         return filmsOrder;
     }
@@ -179,6 +186,20 @@ public class FilmService {
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
+    public List<Film> getSortedFilmsByDirectorId(Long directorId, String sortBy) {
+        if (!directorRepository.existsDirectorById(directorId)) {
+            throw new NotFoundException("Режиссёр не найден", NOT_FOUND);
+        }
+        switch (sortBy) {
+            case "year":
+                return filmRepository.loadFilmsOfDirectorSortedByYears(directorId);
+            case "likes":
+                return filmRepository.loadFilmsOfDirectorSortedByLikes(directorId);
+            default:
+                throw new IllegalArgumentException("Неизвестный тип сортировки");
+        }
+    }
+
     private void checkId(Long id, Long userId) {
         if (!userRepository.existsUserById(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
@@ -186,5 +207,12 @@ public class FilmService {
         if (!filmRepository.existsFilmById(id)) {
             throw new NotFoundException("Фильма с ID: " + id + " не существует", NOT_FOUND);
         }
+    }
+
+    public List<Film> search(String query, String by) {
+        if (query == null) return filmRepository.getAllFilmIfRequestParametersIsEmpty();
+
+        query = "%" + query + "%";
+        return filmRepository.getAllFilmByRequestParameter(query, by);
     }
 }

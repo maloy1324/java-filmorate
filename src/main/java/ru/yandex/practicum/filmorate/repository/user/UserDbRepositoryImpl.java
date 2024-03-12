@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+@SuppressWarnings("ALL")
 @Repository(value = "userDbRepositoryImpl")
 public class UserDbRepositoryImpl implements UserRepository {
 
