@@ -63,10 +63,6 @@ public class FilmService {
     public void addLike(Long id, Long userId) {
         checkId(id, userId);
         boolean isLiked = filmRepository.addLike(id, userId);
-        if (!isLiked) {
-            throw new ValidateException("Пользователь (ID :" + userId +
-                    ") уже добавил фильм (ID:" + id + ") в понравишееся", BAD_REQUEST);
-        }
         feedRepository.saveFeed(new Feed(null, userId, id, EventTypes.LIKE.toString(),
                 Operations.ADD.toString(), System.currentTimeMillis()));
         log.info("Пользователь (ID :{}) добавил фильм (ID:{}) в понравишееся", userId, id);
