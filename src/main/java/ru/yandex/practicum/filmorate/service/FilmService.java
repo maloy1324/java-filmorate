@@ -4,13 +4,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.constant.EventTypes;
+import ru.yandex.practicum.filmorate.constant.Operations;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
 import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,11 +29,15 @@ public class FilmService {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
 
+    private final FeedRepository feedRepository;
+
     @Autowired
     public FilmService(@Qualifier("filmDbRepositoryImpl") FilmRepository filmRepository,
-                       @Qualifier("userDbRepositoryImpl") UserRepository userRepository) {
+                       @Qualifier("userDbRepositoryImpl") UserRepository userRepository,
+                       FeedRepository feedRepository) {
         this.filmRepository = filmRepository;
         this.userRepository = userRepository;
+        this.feedRepository = feedRepository;
     }
 
     public Film addFilm(Film film) {
@@ -57,6 +67,8 @@ public class FilmService {
             throw new ValidateException("Пользователь (ID :" + userId +
                     ") уже добавил фильм (ID:" + id + ") в понравишееся", BAD_REQUEST);
         }
+        feedRepository.saveFeed(new Feed(null, userId, id, EventTypes.LIKE.toString(),
+                Operations.ADD.toString(), System.currentTimeMillis()));
         log.info("Пользователь (ID :{}) добавил фильм (ID:{}) в понравишееся", userId, id);
     }
 
@@ -75,6 +87,8 @@ public class FilmService {
             throw new ValidateException("У пользователя (ID :" + userId +
                     ") нет фильма (ID:" + id + ") в понравишееся", BAD_REQUEST);
         }
+        feedRepository.saveFeed(new Feed(null, userId, id, EventTypes.LIKE.toString(),
+                Operations.REMOVE.toString(), System.currentTimeMillis()));
         log.info("Пользователь (ID :{}) удалил фильм (ID:{}) из понравившихся", userId, id);
     }
 
