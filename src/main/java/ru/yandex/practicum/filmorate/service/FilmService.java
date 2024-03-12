@@ -4,10 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.constant.EventTypes;
+import ru.yandex.practicum.filmorate.constant.Operations;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
 import ru.yandex.practicum.filmorate.repository.director.DirectorRepository;
 import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
@@ -26,6 +30,8 @@ public class FilmService {
     @Autowired
     private DirectorRepository directorRepository;
 
+    @Autowired
+    private FeedRepository feedRepository;
 
     @Autowired
     public FilmService(@Qualifier("filmDbRepositoryImpl") FilmRepository filmRepository,
@@ -57,10 +63,8 @@ public class FilmService {
     public void addLike(Long id, Long userId) {
         checkId(id, userId);
         boolean isLiked = filmRepository.addLike(id, userId);
-        if (!isLiked) {
-            throw new ValidateException("Пользователь (ID :" + userId +
-                    ") уже добавил фильм (ID:" + id + ") в понравишееся", BAD_REQUEST);
-        }
+        feedRepository.saveFeed(new Feed(null, userId, id, EventTypes.LIKE.toString(),
+                Operations.ADD.toString(), System.currentTimeMillis()));
         log.info("Пользователь (ID :{}) добавил фильм (ID:{}) в понравишееся", userId, id);
     }
 
@@ -79,6 +83,8 @@ public class FilmService {
             throw new ValidateException("У пользователя (ID :" + userId +
                     ") нет фильма (ID:" + id + ") в понравишееся", BAD_REQUEST);
         }
+        feedRepository.saveFeed(new Feed(null, userId, id, EventTypes.LIKE.toString(),
+                Operations.REMOVE.toString(), System.currentTimeMillis()));
         log.info("Пользователь (ID :{}) удалил фильм (ID:{}) из понравившихся", userId, id);
     }
 

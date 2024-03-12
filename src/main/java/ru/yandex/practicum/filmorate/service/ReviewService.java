@@ -3,17 +3,20 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.constant.EventTypes;
+import ru.yandex.practicum.filmorate.constant.Operations;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
 import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.review.ReviewRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
 import java.util.Collection;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 @Slf4j
 @Service
@@ -22,12 +25,16 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
 
+    private final FeedRepository feedRepository;
+
     public ReviewService(ReviewRepository reviewRepository,
                          @Qualifier("userDbRepositoryImpl") UserRepository userRepository,
-                         @Qualifier("filmDbRepositoryImpl") FilmRepository filmRepository) {
+                         @Qualifier("filmDbRepositoryImpl") FilmRepository filmRepository,
+                         FeedRepository feedRepository) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.filmRepository = filmRepository;
+        this.feedRepository = feedRepository;
     }
 
     public Review addReview(Review review) {
@@ -41,7 +48,10 @@ public class ReviewService {
         if (!filmExists) {
             throw new NotFoundException("Фильм с id " + filmId + " не найден", NOT_FOUND);
         }
-        return reviewRepository.saveReview(review);
+        Review savedReview = reviewRepository.saveReview(review);
+        feedRepository.saveFeed(new Feed(null, userId, review.getReviewId(), EventTypes.REVIEW.toString(),
+                Operations.ADD.toString(), System.currentTimeMillis()));
+        return savedReview;
     }
 
     public Review updateReview(Review review) {
@@ -49,6 +59,8 @@ public class ReviewService {
         if (updatedReview == null) {
             throw new NotFoundException("Отзыв не найден", NOT_FOUND);
         }
+        feedRepository.saveFeed(new Feed(null, updatedReview.getUserId(), updatedReview.getReviewId(), EventTypes.REVIEW.toString(),
+                Operations.UPDATE.toString(), System.currentTimeMillis()));
         return updatedReview;
     }
 
@@ -65,6 +77,9 @@ public class ReviewService {
         if (!isExists) {
             throw new NotFoundException("Отзыв не найден", NOT_FOUND);
         }
+        Review review = reviewRepository.getReviewById(id);
+        feedRepository.saveFeed(new Feed(null, review.getUserId(), review.getFilmId(), EventTypes.REVIEW.toString(),
+                Operations.REMOVE.toString(), System.currentTimeMillis()));
         reviewRepository.deleteReview(id);
     }
 
