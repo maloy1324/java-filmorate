@@ -69,6 +69,16 @@ public class FilmRepositoryImpl implements FilmRepository {
                 .collect(Collectors.toList());
     }
 
+
+    public List<Film> getAllFilmIfRequestParametersIsEmpty() {
+        return null;
+    }
+
+    @Override
+    public List<Film> getAllFilmByRequestParameter(String query, String parameter) {
+        return List.of();
+    }
+
     @Override
     public List<Film> findCommonFilms(Long userId, Long otherUserId) {
         //Ин мемори репозиторий же не используется? Оставлю так до лучших времен.

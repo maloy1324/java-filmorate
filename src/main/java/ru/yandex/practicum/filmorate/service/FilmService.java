@@ -191,4 +191,11 @@ public class FilmService {
             throw new NotFoundException("Фильма с ID: " + id + " не существует", NOT_FOUND);
         }
     }
+
+    public List<Film> search(String query, String by) {
+        if (query == null) return filmRepository.getAllFilmIfRequestParametersIsEmpty();
+
+        query = "%" + query + "%";
+        return filmRepository.getAllFilmByRequestParameter(query, by);
+    }
 }

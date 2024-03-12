@@ -174,6 +174,68 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     }
 
     @Override
+    public List<Film> getAllFilmByRequestParameter(String query, String parameter) {
+        String sql = "SELECT f.*," +
+                "     m.NAME AS mpa_name," +
+                "     (SELECT STRING_AGG(GENRE_ID::CHARACTER VARYING, ',' ORDER BY GENRE_ID) FROM FILMS_GENRES " +
+                "     WHERE FILM_ID = f.ID) AS GENRES_ID_LIST," +
+                "     (SELECT STRING_AGG(NAME, ',') FROM GENRES g WHERE ID IN " +
+                "     (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.ID)) AS GENRES_LIST," +
+                "     (SELECT string_agg(DIRECTOR_ID::character varying, ',' ORDER BY DIRECTOR_ID) " +
+                "     FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
+                "     (SELECT string_agg(NAME, ',') FROM DIRECTORS d where ID in " +
+                "     (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
+                "     (SELECT string_agg(USER_ID::CHARACTER VARYING, ',') " +
+                "     FROM PUBLIC.FILMS_LIKES " +
+                "     WHERE FILM_ID = f.ID) AS LIKES " +
+                "FROM FILMS f " +
+                "LEFT JOIN MPA m ON m.ID = f.MPA_ID " +
+                "LEFT JOIN PUBLIC.FILMS_LIKES FL on f.ID = FL.FILM_ID " +
+                "LEFT JOIN DIRECTOR_FILMS fd on fd.FILM_ID = f.ID " +
+                "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.ID " +
+                "WHERE " +
+                "   CASE " +
+                "       WHEN ? IS NOT NULL THEN " +
+                "           CASE " +
+                "                               WHEN ? ILIKE '%title%director%' THEN d.NAME ILIKE ? OR f.NAME ILIKE ? " +
+                "           ELSE CASE " +
+                "                   WHEN ? ILIKE '%title%' THEN f.NAME ILIKE ? " +
+                "                ELSE CASE " +
+                "                         WHEN ? ILIKE '%director%' THEN d.NAME ILIKE ? " +
+                "                     END " +
+                "                END " +
+                "           END " +
+                "   END " +
+                "GROUP BY f.ID, mpa_name " +
+                "ORDER BY COUNT(FL.USER_ID) DESC, f.ID";
+        return jdbcTemplate.query(sql, new FilmMapper(), query, parameter, query, query, parameter, query, parameter, query);
+    }
+
+    @Override
+    public List<Film> getAllFilmIfRequestParametersIsEmpty() {
+        String sql = "SELECT f.*," +
+                "     m.NAME AS mpa_name," +
+                "     (SELECT STRING_AGG(GENRE_ID::CHARACTER VARYING, ',' ORDER BY GENRE_ID) FROM FILMS_GENRES " +
+                "     WHERE FILM_ID = f.ID) AS GENRES_ID_LIST," +
+                "     (SELECT STRING_AGG(NAME, ',') FROM GENRES g WHERE ID IN " +
+                "     (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.ID)) AS GENRES_LIST," +
+                "     (SELECT string_agg(DIRECTOR_ID::character varying, ',' ORDER BY DIRECTOR_ID) " +
+                "     FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
+                "     (SELECT string_agg(NAME, ',') FROM DIRECTORS d where ID in " +
+                "     (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
+                "     (SELECT string_agg(USER_ID::CHARACTER VARYING, ',') " +
+                "     FROM PUBLIC.FILMS_LIKES " +
+                "     WHERE FILM_ID = f.ID) AS LIKES " +
+                "FROM FILMS f " +
+                "LEFT JOIN MPA m ON m.ID = f.MPA_ID " +
+                "LEFT JOIN PUBLIC.FILMS_LIKES FL ON f.ID = FL.FILM_ID " +
+                "GROUP BY f.ID, mpa_name " +
+                "ORDER BY COUNT(FL.USER_ID) DESC, f.ID";
+        return jdbcTemplate.query(sql, new FilmMapper());
+    }
+
+
+    @Override
     public List<Film> findCommonFilms(Long userId, Long otherUserId) {
         String sqlForCommonFilmsId = "SELECT fl.FILM_ID " +
                 "FROM FILMS_LIKES AS fl " +

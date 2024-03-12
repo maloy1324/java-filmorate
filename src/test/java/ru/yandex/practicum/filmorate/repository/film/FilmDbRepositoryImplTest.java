@@ -183,4 +183,22 @@ class FilmDbRepositoryImplTest {
         isExists = filmRepository.existsFilmById(1L);
         assertTrue(isExists);
     }
+
+    @Test
+    public void testGetAllFilmIfRequestParametersIsEmpty() {
+        List<Film> allFilms = List.of(film1, film2, film3);
+
+        List<Film> searchResult = filmRepository.getAllFilmIfRequestParametersIsEmpty();
+
+        assertTrue(allFilms.containsAll(searchResult));
+    }
+
+    @Test
+    public void testGetAllFilmByRequestParameter() {
+        List<Film> allFilms = List.of(film1, film2, film3);
+
+        List<Film> searchResult = filmRepository.getAllFilmByRequestParameter("w fi", "title");
+
+        assertTrue(allFilms.containsAll(searchResult));
+    }
 }
