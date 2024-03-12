@@ -13,8 +13,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 

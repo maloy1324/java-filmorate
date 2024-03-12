@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Feed;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Objects;
@@ -16,7 +15,7 @@ import java.util.Objects;
 @SuppressWarnings("ALL")
 @Repository
 @RequiredArgsConstructor
-public class FeedDbRepositoryImpl implements FeedRepository{
+public class FeedDbRepositoryImpl implements FeedRepository {
 
     private final JdbcTemplate jdbcTemplate;
 

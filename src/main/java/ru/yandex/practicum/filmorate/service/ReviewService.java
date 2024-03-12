@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.valves.rewrite.RewriteCond;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.constant.EventTypes;
@@ -15,9 +14,6 @@ import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.review.ReviewRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Collection;
 
 import static org.springframework.http.HttpStatus.*;
