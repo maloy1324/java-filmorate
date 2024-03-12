@@ -13,7 +13,7 @@ import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Objects;
 
-
+@SuppressWarnings("ALL")
 @Repository
 @RequiredArgsConstructor
 public class FeedDbRepositoryImpl implements FeedRepository{

@@ -11,16 +11,11 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
-<<<<<<< HEAD
 import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
-=======
 import ru.yandex.practicum.filmorate.repository.director.DirectorRepository;
->>>>>>> develop
 import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,16 +30,14 @@ public class FilmService {
     @Autowired
     private DirectorRepository directorRepository;
 
-
-    private final FeedRepository feedRepository;
+    @Autowired
+    private FeedRepository feedRepository;
 
     @Autowired
     public FilmService(@Qualifier("filmDbRepositoryImpl") FilmRepository filmRepository,
-                       @Qualifier("userDbRepositoryImpl") UserRepository userRepository,
-                       FeedRepository feedRepository) {
+                       @Qualifier("userDbRepositoryImpl") UserRepository userRepository) {
         this.filmRepository = filmRepository;
         this.userRepository = userRepository;
-        this.feedRepository = feedRepository;
     }
 
     public Film addFilm(Film film) {

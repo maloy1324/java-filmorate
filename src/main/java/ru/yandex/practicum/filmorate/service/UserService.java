@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.constant.EventTypes;
@@ -26,12 +27,11 @@ public class UserService {
 
     private final UserRepository repository;
 
-    private final FeedRepository feedRepository;
+    @Autowired
+    private FeedRepository feedRepository;
 
-    public UserService(@Qualifier("userDbRepositoryImpl") UserRepository repository,
-                       FeedRepository feedRepository) {
+    public UserService(@Qualifier("userDbRepositoryImpl") UserRepository repository) {
         this.repository = repository;
-        this.feedRepository = feedRepository;
     }
 
     public User getUser(Long accountId) {

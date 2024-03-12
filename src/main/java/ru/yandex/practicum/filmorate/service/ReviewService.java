@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.valves.rewrite.RewriteCond;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.constant.EventTypes;
@@ -51,9 +52,10 @@ public class ReviewService {
         if (!filmExists) {
             throw new NotFoundException("Фильм с id " + filmId + " не найден", NOT_FOUND);
         }
-        feedRepository.saveFeed(new Feed(null, userId, review.getFilmId(), EventTypes.REVIEW.toString(),
+        Review savedReview = reviewRepository.saveReview(review);
+        feedRepository.saveFeed(new Feed(null, userId, review.getReviewId(), EventTypes.REVIEW.toString(),
                 Operations.ADD.toString(), System.currentTimeMillis()));
-        return reviewRepository.saveReview(review);
+        return savedReview;
     }
 
     public Review updateReview(Review review) {
@@ -61,7 +63,7 @@ public class ReviewService {
         if (updatedReview == null) {
             throw new NotFoundException("Отзыв не найден", NOT_FOUND);
         }
-        feedRepository.saveFeed(new Feed(null, review.getUserId(), review.getFilmId(), EventTypes.REVIEW.toString(),
+        feedRepository.saveFeed(new Feed(null, updatedReview.getUserId(), updatedReview.getReviewId(), EventTypes.REVIEW.toString(),
                 Operations.UPDATE.toString(), System.currentTimeMillis()));
         return updatedReview;
     }
