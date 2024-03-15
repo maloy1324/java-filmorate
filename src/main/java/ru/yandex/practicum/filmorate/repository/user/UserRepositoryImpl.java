@@ -7,8 +7,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-
 @Repository
 public class UserRepositoryImpl implements UserRepository {
     private final Map<Long, User> users = new HashMap<>();
@@ -43,7 +41,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean addFriend(Long userId, Long friendId) {
         if (getUserById(userId).getFriendsId().contains(friendId)) {
-            throw new ValidateException("Пользователь уже добавлен у друзья", BAD_REQUEST);
+            throw new ValidateException("Пользователь уже добавлен у друзья");
         }
         getUserById(userId).getFriendsId().add(friendId);
         getUserById(friendId).getFriendsId().add(userId);
