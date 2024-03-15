@@ -71,7 +71,7 @@ public class FilmRepositoryImpl implements FilmRepository {
 
 
     public List<Film> getAllFilmIfRequestParametersIsEmpty() {
-        return null;
+        return List.of();
     }
 
     @Override

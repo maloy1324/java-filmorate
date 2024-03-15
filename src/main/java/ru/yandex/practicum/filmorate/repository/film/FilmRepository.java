@@ -24,7 +24,7 @@ public interface FilmRepository {
 
     List<Film> findPopularFilms(int count, Long genreId, Long year);
 
-    public List<Film> getAllFilmIfRequestParametersIsEmpty();
+    List<Film> getAllFilmIfRequestParametersIsEmpty();
 
     List<Film> getAllFilmByRequestParameter(String query, String parameter);
 
