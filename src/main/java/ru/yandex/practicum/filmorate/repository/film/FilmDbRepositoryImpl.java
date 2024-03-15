@@ -177,22 +177,18 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     public List<Film> getAllFilmByRequestParameter(String query, String parameter) {
         String sql = "SELECT f.*," +
                 "     m.NAME AS mpa_name," +
-                "     (SELECT STRING_AGG(GENRE_ID::CHARACTER VARYING, ',' ORDER BY GENRE_ID) FROM FILMS_GENRES " +
-                "     WHERE FILM_ID = f.ID) AS GENRES_ID_LIST," +
-                "     (SELECT STRING_AGG(NAME, ',') FROM GENRES g WHERE ID IN " +
-                "     (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.ID)) AS GENRES_LIST," +
-                "     (SELECT string_agg(DIRECTOR_ID::character varying, ',' ORDER BY DIRECTOR_ID) " +
-                "     FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
-                "     (SELECT string_agg(NAME, ',') FROM DIRECTORS d where ID in " +
-                "     (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
-                "     (SELECT string_agg(USER_ID::CHARACTER VARYING, ',') " +
-                "     FROM PUBLIC.FILMS_LIKES " +
-                "     WHERE FILM_ID = f.ID) AS LIKES " +
+                "     STRING_AGG(fg.GENRE_ID::CHARACTER VARYING, ',' ORDER BY GENRE_ID) AS GENRES_ID_LIST," +
+                "     STRING_AGG(g.NAME, ',') AS GENRES_LIST," +
+                "     STRING_AGG(df.DIRECTOR_ID::character varying, ',' ORDER BY DIRECTOR_ID) AS DIRECTOR_ID_LIST, " +
+                "     STRING_AGG(d.NAME, ',') AS DIRECTORS_LIST, " +
+                "     STRING_AGG(FL.USER_ID::CHARACTER VARYING, ',') AS LIKES " +
                 "FROM FILMS f " +
                 "LEFT JOIN MPA m ON m.ID = f.MPA_ID " +
+                "LEFT JOIN FILMS_GENRES fg ON f.ID = fg.FILM_ID " +
+                "LEFT JOIN GENRES g ON fg.GENRE_ID = g.ID " +
                 "LEFT JOIN PUBLIC.FILMS_LIKES FL on f.ID = FL.FILM_ID " +
-                "LEFT JOIN DIRECTOR_FILMS fd on fd.FILM_ID = f.ID " +
-                "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.ID " +
+                "LEFT JOIN DIRECTOR_FILMS df on df.FILM_ID = f.ID " +
+                "LEFT JOIN DIRECTORS d on df.DIRECTOR_ID = d.ID " +
                 "WHERE " +
                 "   CASE " +
                 "       WHEN ? IS NOT NULL THEN " +
@@ -215,20 +211,18 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     public List<Film> getAllFilmIfRequestParametersIsEmpty() {
         String sql = "SELECT f.*," +
                 "     m.NAME AS mpa_name," +
-                "     (SELECT STRING_AGG(GENRE_ID::CHARACTER VARYING, ',' ORDER BY GENRE_ID) FROM FILMS_GENRES " +
-                "     WHERE FILM_ID = f.ID) AS GENRES_ID_LIST," +
-                "     (SELECT STRING_AGG(NAME, ',') FROM GENRES g WHERE ID IN " +
-                "     (SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = f.ID)) AS GENRES_LIST," +
-                "     (SELECT string_agg(DIRECTOR_ID::character varying, ',' ORDER BY DIRECTOR_ID) " +
-                "     FROM DIRECTOR_FILMS fd where FILM_ID = f.ID) as DIRECTOR_ID_LIST, " +
-                "     (SELECT string_agg(NAME, ',') FROM DIRECTORS d where ID in " +
-                "     (SELECT DIRECTOR_ID FROM DIRECTOR_FILMS fd where FILM_ID = f.ID)) as DIRECTORS_LIST, " +
-                "     (SELECT string_agg(USER_ID::CHARACTER VARYING, ',') " +
-                "     FROM PUBLIC.FILMS_LIKES " +
-                "     WHERE FILM_ID = f.ID) AS LIKES " +
+                "     STRING_AGG(fg.GENRE_ID::CHARACTER VARYING, ',' ORDER BY GENRE_ID) AS GENRES_ID_LIST," +
+                "     STRING_AGG(g.NAME, ',') AS GENRES_LIST," +
+                "     STRING_AGG(df.DIRECTOR_ID::character varying, ',' ORDER BY DIRECTOR_ID) AS DIRECTOR_ID_LIST, " +
+                "     STRING_AGG(d.NAME, ',') AS DIRECTORS_LIST, " +
+                "     STRING_AGG(FL.USER_ID::CHARACTER VARYING, ',') AS LIKES " +
                 "FROM FILMS f " +
                 "LEFT JOIN MPA m ON m.ID = f.MPA_ID " +
-                "LEFT JOIN PUBLIC.FILMS_LIKES FL ON f.ID = FL.FILM_ID " +
+                "LEFT JOIN FILMS_GENRES fg ON f.ID = fg.FILM_ID " +
+                "LEFT JOIN GENRES g ON fg.GENRE_ID = g.ID " +
+                "LEFT JOIN PUBLIC.FILMS_LIKES FL on f.ID = FL.FILM_ID " +
+                "LEFT JOIN DIRECTOR_FILMS df on df.FILM_ID = f.ID " +
+                "LEFT JOIN DIRECTORS d on df.DIRECTOR_ID = d.ID " +
                 "GROUP BY f.ID, mpa_name " +
                 "ORDER BY COUNT(FL.USER_ID) DESC, f.ID";
         return jdbcTemplate.query(sql, new FilmMapper());
