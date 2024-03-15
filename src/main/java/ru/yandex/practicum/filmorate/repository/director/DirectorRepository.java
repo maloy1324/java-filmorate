@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.repository.director;
 
 import ru.yandex.practicum.filmorate.model.Director;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
 
 public interface DirectorRepository {
@@ -17,7 +17,7 @@ public interface DirectorRepository {
 
     void deleteDirectorById(Long id);
 
-    LinkedHashSet<Director> getFilmDirectors(Long filmId);
+    ArrayList<Director> getFilmDirectors(Long filmId);
 
     boolean existsDirectorById(Long directorId);
 }
