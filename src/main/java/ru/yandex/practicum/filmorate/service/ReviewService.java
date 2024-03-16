@@ -16,8 +16,6 @@ import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
 import java.util.Collection;
 
-import static org.springframework.http.HttpStatus.*;
-
 @Slf4j
 @Service
 public class ReviewService {
@@ -43,10 +41,10 @@ public class ReviewService {
         boolean userExists = userRepository.existsUserById(userId);
         boolean filmExists = filmRepository.existsFilmById(filmId);
         if (!userExists) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
         if (!filmExists) {
-            throw new NotFoundException("Фильм с id " + filmId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Фильм с id " + filmId + " не найден");
         }
         Review savedReview = reviewRepository.saveReview(review);
         feedRepository.saveFeed(new Feed(null, userId, review.getReviewId(), EventTypes.REVIEW.toString(),
@@ -57,7 +55,7 @@ public class ReviewService {
     public Review updateReview(Review review) {
         Review updatedReview = reviewRepository.updateReview(review);
         if (updatedReview == null) {
-            throw new NotFoundException("Отзыв не найден", NOT_FOUND);
+            throw new NotFoundException("Отзыв не найден");
         }
         feedRepository.saveFeed(new Feed(null, updatedReview.getUserId(), updatedReview.getReviewId(), EventTypes.REVIEW.toString(),
                 Operations.UPDATE.toString(), System.currentTimeMillis()));
@@ -67,7 +65,7 @@ public class ReviewService {
     public Review getReview(Long id) {
         Review review = reviewRepository.getReviewById(id);
         if (review == null) {
-            throw new NotFoundException("Отзыв не найден", NOT_FOUND);
+            throw new NotFoundException("Отзыв не найден");
         }
         return review;
     }
@@ -75,7 +73,7 @@ public class ReviewService {
     public void deleteReview(Long id) {
         boolean isExists = reviewRepository.existsReviewById(id);
         if (!isExists) {
-            throw new NotFoundException("Отзыв не найден", NOT_FOUND);
+            throw new NotFoundException("Отзыв не найден");
         }
         Review review = reviewRepository.getReviewById(id);
         feedRepository.saveFeed(new Feed(null, review.getUserId(), review.getFilmId(), EventTypes.REVIEW.toString(),
@@ -87,7 +85,7 @@ public class ReviewService {
         checkId(id, userId);
         boolean likeAdded = reviewRepository.addLike(id, userId);
         if (!likeAdded) {
-            throw new BadRequestException("Пользователь (ID :{}) уже добавил лайк к отзыву (ID:{})", BAD_REQUEST);
+            throw new BadRequestException("Пользователь (ID :{}) уже добавил лайк к отзыву (ID:{})");
         }
         log.info("Пользователь (ID :{}) добавил лайк к отзыву (ID:{})", userId, id);
     }
@@ -96,7 +94,7 @@ public class ReviewService {
         checkId(id, userId);
         boolean likeRemoved = reviewRepository.removeLike(id, userId);
         if (!likeRemoved) {
-            throw new BadRequestException("Пользователь (ID :{}) не добавлял лайк к отзыву (ID:{})", BAD_REQUEST);
+            throw new BadRequestException("Пользователь (ID :{}) не добавлял лайк к отзыву (ID:{})");
         }
         log.info("Пользователь (ID :{}) удалил лайк к отзыву (ID:{})", userId, id);
     }
@@ -105,7 +103,7 @@ public class ReviewService {
         checkId(id, userId);
         boolean dislikeAdded = reviewRepository.addDislike(id, userId);
         if (!dislikeAdded) {
-            throw new BadRequestException("Пользователь (ID :{}) уже добавил дизлайк к отзыву (ID:{})", BAD_REQUEST);
+            throw new BadRequestException("Пользователь (ID :{}) уже добавил дизлайк к отзыву (ID:{})");
         }
         log.info("Пользователь (ID :{}) добавил дизлайк к отзыву (ID:{})", userId, id);
     }
@@ -114,7 +112,7 @@ public class ReviewService {
         checkId(id, userId);
         boolean dislikeRemoved = reviewRepository.removeDislike(id, userId);
         if (!dislikeRemoved) {
-            throw new BadRequestException("Пользователь (ID :{}) не добавлял дизлайк к отзыву (ID:{})", BAD_REQUEST);
+            throw new BadRequestException("Пользователь (ID :{}) не добавлял дизлайк к отзыву (ID:{})");
         }
         log.info("Пользователь (ID :{}) удалил дизлайк к отзыву (ID:{})", userId, id);
     }
@@ -132,10 +130,10 @@ public class ReviewService {
 
     private void checkId(Long id, Long userId) {
         if (!userRepository.existsUserById(userId)) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
         if (!reviewRepository.existsReviewById(id)) {
-            throw new NotFoundException("Отзыва с ID: " + id + " не существует", NOT_FOUND);
+            throw new NotFoundException("Отзыва с ID: " + id + " не существует");
         }
     }
 }

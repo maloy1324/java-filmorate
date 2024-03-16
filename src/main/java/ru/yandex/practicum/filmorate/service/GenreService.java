@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -27,7 +26,7 @@ public class GenreService {
     public Genre getGenreById(Long id) {
         Genre genre = genreRepository.getGenreById(id);
         if (genre == null) {
-            throw new NotFoundException("Жанр не найден.", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Жанр не найден.");
         }
         return genre;
     }
@@ -35,7 +34,7 @@ public class GenreService {
     public Genre updateGenre(Genre genre) {
         Genre updatedGenre = genreRepository.updateGenre(genre);
         if (updatedGenre == null) {
-            throw new NotFoundException("Жанр не найден.", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Жанр не найден.");
         }
         return updatedGenre;
     }

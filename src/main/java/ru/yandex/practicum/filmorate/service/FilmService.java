@@ -11,16 +11,13 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
 import ru.yandex.practicum.filmorate.repository.director.DirectorRepository;
+import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
 import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @Service
@@ -47,7 +44,7 @@ public class FilmService {
     public Film updateFilm(Film film) {
         Film updatedFilm = filmRepository.updateFilm(film);
         if (updatedFilm == null) {
-            throw new NotFoundException("Фильм не найден", NOT_FOUND);
+            throw new NotFoundException("Фильм не найден");
         }
         return updatedFilm;
     }
@@ -55,7 +52,7 @@ public class FilmService {
     public Film getFilm(Long id) {
         Film film = filmRepository.getFilmById(id);
         if (film == null) {
-            throw new NotFoundException("Фильм не найден", NOT_FOUND);
+            throw new NotFoundException("Фильм не найден");
         }
         return film;
     }
@@ -71,7 +68,7 @@ public class FilmService {
     public void deleteFilm(Long id) {
         boolean isExists = filmRepository.existsFilmById(id);
         if (!isExists) {
-            throw new NotFoundException("Фильм не найден", NOT_FOUND);
+            throw new NotFoundException("Фильм не найден");
         }
         filmRepository.deleteFilm(id);
     }
@@ -81,7 +78,7 @@ public class FilmService {
         boolean likeRemoved = filmRepository.removeLike(id, userId);
         if (!likeRemoved) {
             throw new ValidateException("У пользователя (ID :" + userId +
-                    ") нет фильма (ID:" + id + ") в понравишееся", BAD_REQUEST);
+                    ") нет фильма (ID:" + id + ") в понравишееся");
         }
         feedRepository.saveFeed(new Feed(null, userId, id, EventTypes.LIKE.toString(),
                 Operations.REMOVE.toString(), System.currentTimeMillis()));
@@ -104,20 +101,20 @@ public class FilmService {
 
     public List<Film> findCommonFilms(Long userId, Long otherUserId) {
         if (userId.equals(otherUserId)) {
-            throw new BadRequestException("Запрос общих фильмов у одного и того же пользователя", BAD_REQUEST);
+            throw new BadRequestException("Запрос общих фильмов у одного и того же пользователя");
         }
         if (!userRepository.existsUserById(userId)) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
         if (!userRepository.existsUserById(otherUserId)) {
-            throw new NotFoundException("Пользователь с id " + otherUserId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + otherUserId + " не найден");
         }
         return filmRepository.findCommonFilms(userId, otherUserId);
     }
 
     public List<Film> findRecommendedFilms(Integer userId) {
         if (!userRepository.existsUserById((long) userId)) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
         Map<Integer, List<Integer>> usersIDLikesIDSimilarTaste = filmRepository.getUsersIDLikesIDSimilarTaste(userId);
         List<Integer> userLikes = usersIDLikesIDSimilarTaste.remove(userId);
@@ -177,7 +174,7 @@ public class FilmService {
 
     public List<Film> getSortedFilmsByDirectorId(Long directorId, String sortBy) {
         if (!directorRepository.existsDirectorById(directorId)) {
-            throw new NotFoundException("Режиссёр не найден", NOT_FOUND);
+            throw new NotFoundException("Режиссёр не найден");
         }
         switch (sortBy) {
             case "year":
@@ -191,10 +188,10 @@ public class FilmService {
 
     private void checkId(Long id, Long userId) {
         if (!userRepository.existsUserById(userId)) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
         if (!filmRepository.existsFilmById(id)) {
-            throw new NotFoundException("Фильма с ID: " + id + " не существует", NOT_FOUND);
+            throw new NotFoundException("Фильма с ID: " + id + " не существует");
         }
     }
 

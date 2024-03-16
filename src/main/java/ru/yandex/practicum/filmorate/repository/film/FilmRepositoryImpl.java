@@ -71,7 +71,7 @@ public class FilmRepositoryImpl implements FilmRepository {
 
 
     public List<Film> getAllFilmIfRequestParametersIsEmpty() {
-        return null;
+        return List.of();
     }
 
     @Override
@@ -81,28 +81,27 @@ public class FilmRepositoryImpl implements FilmRepository {
 
     @Override
     public List<Film> findCommonFilms(Long userId, Long otherUserId) {
-        //Ин мемори репозиторий же не используется? Оставлю так до лучших времен.
         return List.of();
     }
 
     @Override
     public Map<Integer, List<Integer>> getUsersIDLikesIDSimilarTaste(Integer userId) {
-        return null;
+        return Map.of();
     }
 
     @Override
     public List<Film> getFilmsByFilmsId(List<Integer> filmsId) {
-        return null;
+        return List.of();
     }
 
     @Override
     public List<Film> loadFilmsOfDirectorSortedByYears(Long directorId) {
-        return null;
+        return List.of();
     }
 
     @Override
     public List<Film> loadFilmsOfDirectorSortedByLikes(Long directorId) {
-        return null;
+        return List.of();
     }
 
     private Long generateId() {

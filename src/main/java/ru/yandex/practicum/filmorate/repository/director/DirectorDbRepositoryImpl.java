@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.repository.director;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -14,10 +13,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
-
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @SuppressWarnings("ALL")
 @Component
@@ -28,7 +25,7 @@ public class DirectorDbRepositoryImpl implements DirectorRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Director createDirector(Director director) { //создание режиссёра
+    public Director createDirector(Director director) {
         String sqlQuery = "INSERT INTO DIRECTORS (NAME) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -44,25 +41,25 @@ public class DirectorDbRepositoryImpl implements DirectorRepository {
     }
 
     @Override
-    public List<Director> getDirectors() { //получение всех режиссёров
+    public List<Director> getDirectors() {
         return jdbcTemplate.query("SELECT * FROM DIRECTORS", new DirectorMapper());
     }
 
     @Override
-    public Director getDirectorById(Long id) { //получение режиссёра по id
+    public Director getDirectorById(Long id) {
         if (!existsDirectorById(id)) {
-            throw new NotFoundException("Режиссёр не найден", NOT_FOUND);
+            throw new NotFoundException("Режиссёр не найден");
         }
         return jdbcTemplate.queryForObject("SELECT * FROM DIRECTORS WHERE id = ?",
                 new DirectorMapper(), id);
     }
 
     @Override
-    public Director updateDirector(Director director) { //изменение режиссёра
+    public Director updateDirector(Director director) {
         int count = jdbcTemplate.update("UPDATE DIRECTORS SET id = ?, name = ? WHERE id = ?",
                 director.getId(), director.getName(), director.getId());
         if (count == 0) {
-            throw new NotFoundException("Режиссёра с указанным id не существует", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Режиссёра с указанным id не существует");
         } else {
             log.info("В базе обновлен режиссер: {}", director);
             return getDirectorById(director.getId());
@@ -70,20 +67,21 @@ public class DirectorDbRepositoryImpl implements DirectorRepository {
     }
 
     @Override
-    public void deleteDirectorById(Long id) { //удаление режиссёра
+    public void deleteDirectorById(Long id) {
         final Director dir = getDirectorById(id);
         int count = jdbcTemplate.update("DELETE FROM DIRECTORS WHERE id = ?", id);
         if (count == 0) {
-            throw new NotFoundException("Режиссёра с указанным id не существует", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Режиссёра с указанным id не существует");
         } else {
             log.info("В базе удален режиссер: {}", dir);
         }
     }
 
     @Override
-    public LinkedHashSet<Director> getFilmDirectors(Long filmId) {
-        return new LinkedHashSet<>(jdbcTemplate.query("SELECT * FROM DIRECTORS WHERE id IN " +
-                        "(SELECT DIRECTOR_ID FROM DIRECTOR_FILMS WHERE FILM_ID = ?)",
+    public ArrayList<Director> getFilmDirectors(Long filmId) {
+        return new ArrayList<>(jdbcTemplate.query("SELECT d.* FROM DIRECTORS d " +
+                        "JOIN DIRECTOR_FILMS df ON d.id = df.DIRECTOR_ID " +
+                        "WHERE df.FILM_ID = ?",
                 new DirectorMapper(), filmId));
     }
 
