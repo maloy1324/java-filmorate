@@ -118,14 +118,10 @@ public class ReviewService {
     }
 
     public Collection<Review> findAll(String filmId, String count) {
-        try {
-            int size = Integer.parseInt(count);
-            Long id = Long.parseLong(filmId);
-            log.info("Список отзывов отправлен");
-            return reviewRepository.getAllReviews(id, size);
-        } catch (NumberFormatException e) {
-            throw new NumberFormatException(e.getMessage());
-        }
+        int size = Integer.parseInt(count);
+        Long id = Long.parseLong(filmId);
+        log.info("Список отзывов отправлен");
+        return reviewRepository.getAllReviews(id, size);
     }
 
     private void checkId(Long id, Long userId) {
