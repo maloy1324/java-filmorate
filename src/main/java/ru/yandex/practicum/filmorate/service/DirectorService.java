@@ -30,7 +30,7 @@ public class DirectorService {
         return Optional.ofNullable(directorRepository.getDirectorById(id))
                 .orElseThrow(() -> new NotFoundException("Режиссёр не найден."));
     }
-    
+
     public Director updateDirector(Director director) {
         Director updatedDirector = directorRepository.updateDirector(director);
         return updatedDirector;
