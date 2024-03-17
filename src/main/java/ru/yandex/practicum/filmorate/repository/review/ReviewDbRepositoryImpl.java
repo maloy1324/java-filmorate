@@ -50,9 +50,11 @@ public class ReviewDbRepositoryImpl implements ReviewRepository {
             return null;
         }
         String sqlQuery = "SELECT r.*, " +
-                "(SELECT COUNT(*) FROM REVIEWS_LIKES WHERE REVIEW_ID = r.REVIEW_ID) " +
-                "- (SELECT COUNT(*) FROM REVIEWS_DISLIKES WHERE REVIEW_ID = r.REVIEW_ID) AS useful " +
-                "FROM REVIEWS AS r WHERE REVIEW_ID = ?";
+                "COUNT(rl.REVIEW_ID) - COUNT(rd.REVIEW_ID) AS useful " +
+                "FROM REVIEWS AS r " +
+                "LEFT JOIN REVIEWS_LIKES AS rl ON r.REVIEW_ID = rl.REVIEW_ID " +
+                "LEFT JOIN REVIEWS_DISLIKES AS rd ON r.REVIEW_ID = rd.REVIEW_ID " +
+                "WHERE r.REVIEW_ID = ?";
 
         return jdbcTemplate.queryForObject(sqlQuery, new ReviewMapper(), id);
     }
@@ -90,7 +92,6 @@ public class ReviewDbRepositoryImpl implements ReviewRepository {
     public boolean addLike(Long reviewId, Long userId) {
         String sqlQuery = "INSERT INTO REVIEWS_LIKES(REVIEW_ID, USER_ID) " +
                 "SELECT ?, ? " +
-                "FROM dual " +
                 "WHERE NOT EXISTS(" +
                 "    SELECT 1" +
                 "    FROM REVIEWS_LIKES" +
@@ -108,7 +109,6 @@ public class ReviewDbRepositoryImpl implements ReviewRepository {
     public boolean addDislike(Long reviewId, Long userId) {
         String sqlQuery = "INSERT INTO REVIEWS_DISLIKES(REVIEW_ID, USER_ID) " +
                 "SELECT ?, ? " +
-                "FROM dual " +
                 "WHERE NOT EXISTS(" +
                 "    SELECT 1" +
                 "    FROM REVIEWS_LIKES" +
