@@ -18,5 +18,5 @@ public class Review {
     private Long userId;
     @NotNull(message = "Не указан фильм, которому принадлежит отзыв")
     private Long filmId;
-    Integer useful;
+    private Integer useful;
 }
