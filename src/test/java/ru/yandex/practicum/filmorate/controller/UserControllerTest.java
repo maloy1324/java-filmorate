@@ -27,7 +27,7 @@ class UserControllerTest {
     void beforeEach() {
         UserRepositoryImpl repository = new UserRepositoryImpl();
         UserService service = new UserService(repository);
-        controller = new UserController(service);
+        controller = new UserController(service, null);
     }
 
     @Test

@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -27,7 +26,7 @@ public class MpaService {
     public Mpa getMpaById(Long id) {
         Mpa mpa = mpaRepository.getMpaById(id);
         if (mpa == null) {
-            throw new NotFoundException("MPA не найден.", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("MPA не найден.");
         }
         return mpa;
     }
@@ -35,7 +34,7 @@ public class MpaService {
     public Mpa updateMpa(Mpa mpa) {
         Mpa updatedMpa = mpaRepository.updateMpa(mpa);
         if (updatedMpa == null) {
-            throw new NotFoundException("MPA не найден.", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("MPA не найден.");
         }
         return updatedMpa;
     }

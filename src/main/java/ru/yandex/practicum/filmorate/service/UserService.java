@@ -1,24 +1,29 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.constant.EventTypes;
+import ru.yandex.practicum.filmorate.constant.Operations;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.feed.FeedRepository;
 import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
 import java.util.Collection;
 import java.util.List;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @Service
 public class UserService {
 
     private final UserRepository repository;
+
+    @Autowired
+    private FeedRepository feedRepository;
 
     public UserService(@Qualifier("userDbRepositoryImpl") UserRepository repository) {
         this.repository = repository;
@@ -27,9 +32,17 @@ public class UserService {
     public User getUser(Long accountId) {
         User user = repository.getUserById(accountId);
         if (user == null) {
-            throw new NotFoundException("Пользователь с указанным id не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с указанным id не найден");
         }
         return user;
+    }
+
+    public void deleteUser(Long accountId) {
+        boolean isExists = repository.existsUserById(accountId);
+        if (!isExists) {
+            throw new NotFoundException("Пользователь с id " + accountId + " не найден");
+        }
+        repository.deleteUser(accountId);
     }
 
     public Collection<User> getUsers() {
@@ -44,14 +57,16 @@ public class UserService {
         checkId(userId, friendId);
         boolean isAdded = repository.addFriend(userId, friendId);
         if (!isAdded) {
-            throw new BadRequestException("Пользователь уже добавлен в друзья", BAD_REQUEST);
+            throw new BadRequestException("Пользователь уже добавлен в друзья");
         }
+        feedRepository.saveFeed(new Feed(null, userId,friendId, EventTypes.FRIEND.toString(),
+                Operations.ADD.toString(), System.currentTimeMillis()));
         log.info("(ID: {}) добавлен в друзья к (ID: {})", friendId, userId);
     }
 
     public List<User> getAllFriends(Long userId) {
         if (!repository.existsUserById(userId)) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
         log.info("Список друзей отправлен.");
         return repository.findAllFriends(userId);
@@ -60,6 +75,8 @@ public class UserService {
     public void deleteFriendById(Long userId, Long friendId) {
         repository.deleteFriend(userId, friendId);
         log.info("(ID: {}) удалён из друзей (ID: {})", friendId, userId);
+        feedRepository.saveFeed(new Feed(null, userId,friendId, EventTypes.FRIEND.toString(),
+                Operations.REMOVE.toString(), System.currentTimeMillis()));
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
@@ -71,9 +88,16 @@ public class UserService {
     public User updateUser(User user) {
         User updatedUser = repository.updateUser(validateName(user));
         if (updatedUser == null) {
-            throw new NotFoundException("Пользователь с указанным id не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с указанным id не найден");
         }
         return updatedUser;
+    }
+
+    public List<Feed> getFeedForUser(Long userId) {
+        if (!repository.existsUserById(userId)) {
+            throw new NotFoundException("Пользователь с указанным id не найден");
+        }
+        return feedRepository.getFeedForUser(userId);
     }
 
     private User validateName(User user) {
@@ -87,10 +111,10 @@ public class UserService {
 
     private void checkId(Long id, Long otherId) {
         if (!repository.existsUserById(id)) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + id + " не найден");
         }
         if (!repository.existsUserById(otherId)) {
-            throw new NotFoundException("Пользователь с id " + otherId + " не найден", NOT_FOUND);
+            throw new NotFoundException("Пользователь с id " + otherId + " не найден");
         }
     }
 }

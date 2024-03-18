@@ -17,7 +17,7 @@ public class HandlerException {
         log.error("Ошибка вадидации: " + e.getMessage());
         return new ResponseEntity<>(ResponseError.builder()
                 .message("Ошибка вадидации: " + e.getMessage())
-                .build(), e.getStatus());
+                .build(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -25,7 +25,7 @@ public class HandlerException {
         log.error(e.getMessage());
         return new ResponseEntity<>(ResponseError.builder()
                 .message(e.getMessage())
-                .build(), e.getStatus());
+                .build(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -33,7 +33,7 @@ public class HandlerException {
         log.error(e.getMessage());
         return new ResponseEntity<>(ResponseError.builder()
                 .message(e.getMessage())
-                .build(), e.getStatus());
+                .build(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NumberFormatException.class)

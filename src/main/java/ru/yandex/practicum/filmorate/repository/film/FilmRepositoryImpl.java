@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 @Repository
 public class FilmRepositoryImpl implements FilmRepository {
-    private Long globalId = 0L;
     private final Map<Long, Film> films = new HashMap<>();
+    private Long globalId = 0L;
 
     @Override
     public Film saveFilm(Film film) {
@@ -61,11 +61,47 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public List<Film> findPopularFilms(int count) {
+    public List<Film> findPopularFilms(int count, Long genreId, Long year) {
+        // не используется
         return films.values().stream()
                 .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+
+    public List<Film> getAllFilmIfRequestParametersIsEmpty() {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getAllFilmByRequestParameter(String query, String parameter) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> findCommonFilms(Long userId, Long otherUserId) {
+        return List.of();
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getUsersIDLikesIDSimilarTaste(Integer userId) {
+        return Map.of();
+    }
+
+    @Override
+    public List<Film> getFilmsByFilmsId(List<Integer> filmsId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> loadFilmsOfDirectorSortedByYears(Long directorId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> loadFilmsOfDirectorSortedByLikes(Long directorId) {
+        return List.of();
     }
 
     private Long generateId() {
