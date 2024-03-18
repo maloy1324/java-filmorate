@@ -6,6 +6,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -55,7 +56,7 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     @Override
     public Film getFilmById(Long id) {
         if (!existsFilmById(id)) {
-            return null;
+            throw new NotFoundException("ID не найден!");
         }
         String sqlQuery = "SELECT f.*, " +
                 "       M.NAME                                                                      AS MPA_NAME, " +
@@ -100,7 +101,7 @@ public class FilmDbRepositoryImpl implements FilmRepository {
     @Override
     public Film updateFilm(Film film) {
         if (!existsFilmById(film.getId())) {
-            return null;
+            throw new NotFoundException("ID не найден!");
         }
         jdbcTemplate.update("UPDATE FILMS" +
                         " SET NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ?, MPA_ID = ? WHERE ID = ?",

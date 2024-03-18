@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
@@ -47,7 +48,7 @@ public class ReviewDbRepositoryImpl implements ReviewRepository {
     @Override
     public Review getReviewById(Long id) {
         if (!existsReviewById(id)) {
-            return null;
+            throw new NotFoundException("ID не найден!");
         }
         String sqlQuery = "SELECT r.*, " +
                 "COUNT(rl.REVIEW_ID) - COUNT(rd.REVIEW_ID) AS useful " +
@@ -77,7 +78,7 @@ public class ReviewDbRepositoryImpl implements ReviewRepository {
     @Override
     public Review updateReview(Review review) {
         if (!existsReviewById(review.getReviewId())) {
-            return null;
+            throw new NotFoundException("ID не найден!");
         }
         jdbcTemplate.update("UPDATE REVIEWS" +
                         " SET CONTENT = ?, IS_POSITIVE = ? WHERE REVIEW_ID = ?",
@@ -142,7 +143,7 @@ public class ReviewDbRepositoryImpl implements ReviewRepository {
                     .isPositive(rs.getBoolean("IS_POSITIVE"))
                     .userId(rs.getLong("USER_ID"))
                     .filmId(rs.getLong("FILM_ID"))
-                    .useful(rs.getInt("USEFUL"))
+                    .useful(rs.getInt("useful"))
                     .build();
         }
     }

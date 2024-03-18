@@ -32,8 +32,7 @@ public class DirectorService {
     }
 
     public Director updateDirector(Director director) {
-        Director updatedDirector = directorRepository.updateDirector(director);
-        return updatedDirector;
+        return directorRepository.updateDirector(director);
     }
 
     public void deleteDirectorById(Long id) {
